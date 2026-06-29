@@ -1,7 +1,7 @@
 {
   "name": "reviewpilot",
   "displayName": "ReviewPilot",
-  "description": "AI-powered code review using Ollama — inline annotations as you code",
+  "description": "AI-powered code review using Ollama — private, local, and free. Inline annotations, bug detection, security scanning.",
   "version": "1.0.0",
   "publisher": "reviewpilot",
   "license": "MIT",
@@ -11,16 +11,28 @@
   "categories": [
     "Linters",
     "Programming Languages",
-    "Other"
+    "Other",
+    "Testing"
   ],
   "keywords": [
     "code-review",
     "ai",
     "ollama",
     "linter",
-    "review"
+    "code-quality",
+    "pr-review",
+    "security",
+    "static-analysis",
+    "code-analysis",
+    "llm",
+    "developer-tool",
+    "productivity"
   ],
   "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
   "activationEvents": [
     "onStartupFinished"
   ],
@@ -38,6 +50,10 @@
       {
         "command": "reviewpilot.clearAnnotations",
         "title": "ReviewPilot: Clear Annotations"
+      },
+      {
+        "command": "reviewpilot.upgrade",
+        "title": "ReviewPilot: Upgrade to Pro"
       }
     ],
     "configuration": {
@@ -56,7 +72,7 @@
         "reviewpilot.autoReviewOnSave": {
           "type": "boolean",
           "default": false,
-          "description": "Automatically review files on save"
+          "description": "Automatically review files on save (requires Pro license)"
         }
       }
     }

@@ -3,22 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ReviewPilot — AI Code Review, Local & Private</title>
-  <meta name="description" content="AI-powered code review that runs entirely on your machine. Private, free, and fast.">
+  <title>ReviewPilot — AI Code Review, 100% Local & Private</title>
+  <meta name="description" content="AI-powered code review that runs entirely on your machine. Private, free, and fast. Catch bugs and security issues before they ship.">
+  <meta name="keywords" content="ai code review, ollama code review, local ai, private code review, github pr review, code reviewer">
+
+  <meta property="og:title" content="ReviewPilot — AI Code Review, Local & Private">
+  <meta property="og:description" content="AI-powered code review that runs entirely on your machine. Your code never leaves your computer.">
+  <meta property="og:url" content="https://reviewpilot.dev">
+  <meta property="og:type" content="product">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ReviewPilot — AI Code Review">
+  <meta name="twitter:description" content="AI-powered code review that runs entirely on your machine. Private, free, fast.">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ReviewPilot",
+    "operatingSystem": "Windows, macOS, Linux",
+    "applicationCategory": "DeveloperApplication",
+    "description": "AI-powered code review CLI that runs locally with Ollama. 100% private, no API costs.",
+    "offers": [
+      { "@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "USD" },
+      { "@type": "Offer", "name": "Pro", "price": "199", "priceCurrency": "USD" },
+      { "@type": "Offer", "name": "Team", "price": "499", "priceCurrency": "USD", "priceSpecification": { "unitText": "year" } }
+    ]
+  }
+  </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
-      color: #1a1a2e;
-      background: #f8f9fa;
+      color: #e0e0e0;
+      background: #0d1117;
     }
     .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
-    /* Nav */
     nav {
-      background: #1a1a2e;
-      color: white;
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
       padding: 16px 0;
       position: sticky;
       top: 0;
@@ -29,117 +55,327 @@
       justify-content: space-between;
       align-items: center;
     }
-    nav .logo { font-size: 1.4rem; font-weight: 700; }
-    nav .logo span { color: #4fc3f7; }
-    nav a { color: #ccc; text-decoration: none; margin-left: 24px; font-size: 0.9rem; }
-    nav a:hover { color: white; }
-    nav .btn-nav {
-      background: #4fc3f7;
-      color: #1a1a2e;
+    nav .logo { font-size: 1.4rem; font-weight: 700; color: #f0f6fc; }
+    nav .logo span { color: #58a6ff; }
+    nav .nav-links { display: flex; align-items: center; gap: 8px; }
+    nav .nav-links a { color: #8b949e; text-decoration: none; margin-left: 20px; font-size: 0.9rem; transition: color 0.2s; }
+    nav .nav-links a:hover { color: #f0f6fc; }
+    .btn-nav {
+      background: #238636;
+      color: white !important;
       padding: 8px 20px;
       border-radius: 6px;
       font-weight: 600;
+      margin-left: 20px !important;
     }
+    .btn-nav:hover { background: #2ea043 !important; }
 
-    /* Hero */
     .hero {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-      color: white;
+      background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
       padding: 100px 0 80px;
       text-align: center;
+      border-bottom: 1px solid #30363d;
     }
-    .hero h1 { font-size: 3rem; margin-bottom: 16px; }
-    .hero h1 span { color: #4fc3f7; }
-    .hero p { font-size: 1.2rem; color: #aaa; max-width: 640px; margin: 0 auto 32px; }
+    .hero h1 { font-size: 3.2rem; font-weight: 800; color: #f0f6fc; margin-bottom: 16px; line-height: 1.2; }
+    .hero h1 span { color: #58a6ff; }
+    .hero p { font-size: 1.2rem; color: #8b949e; max-width: 640px; margin: 0 auto 32px; }
     .hero-code {
-      background: #0f3460;
+      background: #0d1117;
+      border: 1px solid #30363d;
       padding: 16px 24px;
       border-radius: 8px;
       display: inline-block;
-      font-family: monospace;
-      font-size: 1rem;
-      color: #4fc3f7;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.95rem;
+      color: #58a6ff;
+      text-align: left;
     }
-    .hero .badges { margin-top: 32px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-    .hero .badge {
-      background: rgba(79, 195, 247, 0.15);
-      color: #4fc3f7;
-      padding: 6px 16px;
+    .hero-code .prompt { color: #8b949e; }
+    .hero-code .cmd { color: #f0f6fc; }
+    .hero-badges { margin-top: 32px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-badge {
+      background: rgba(56, 139, 253, 0.1);
+      border: 1px solid rgba(56, 139, 253, 0.3);
+      color: #58a6ff;
+      padding: 8px 18px;
       border-radius: 20px;
       font-size: 0.85rem;
+      font-weight: 500;
     }
+    .hero-cta { margin-top: 40px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary {
+      background: #238636;
+      color: white;
+      padding: 14px 36px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.05rem;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #2ea043; }
+    .btn-secondary {
+      background: transparent;
+      color: #58a6ff;
+      border: 1px solid #58a6ff;
+      padding: 14px 36px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1.05rem;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(56, 139, 253, 0.1); }
 
-    /* Features */
-    .features { padding: 80px 0; }
-    .features h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
+    section { padding: 80px 0; }
+    section h2 { text-align: center; font-size: 2rem; color: #f0f6fc; margin-bottom: 16px; }
+    section .subtitle { text-align: center; color: #8b949e; margin-bottom: 48px; font-size: 1.05rem; }
+
+    .features { border-bottom: 1px solid #30363d; }
     .feature-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 32px;
+      gap: 24px;
     }
     .feature-card {
-      background: white;
+      background: #161b22;
+      border: 1px solid #30363d;
       padding: 32px;
       border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      transition: border-color 0.2s;
     }
+    .feature-card:hover { border-color: #58a6ff; }
     .feature-card .icon { font-size: 2rem; margin-bottom: 12px; }
-    .feature-card h3 { margin-bottom: 8px; }
-    .feature-card p { color: #666; font-size: 0.95rem; }
+    .feature-card h3 { color: #f0f6fc; margin-bottom: 8px; font-size: 1.15rem; }
+    .feature-card p { color: #8b949e; font-size: 0.95rem; }
 
-    /* Pricing */
-    .pricing { background: #1a1a2e; color: white; padding: 80px 0; }
-    .pricing h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
+    .pricing { border-bottom: 1px solid #30363d; }
     .pricing-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 24px;
+      max-width: 960px;
+      margin: 0 auto;
     }
     .pricing-card {
-      background: #16213e;
+      background: #161b22;
+      border: 1px solid #30363d;
       border-radius: 12px;
       padding: 32px;
       text-align: center;
+      display: flex;
+      flex-direction: column;
     }
     .pricing-card.featured {
-      border: 2px solid #4fc3f7;
-      transform: scale(1.02);
+      border: 2px solid #58a6ff;
+      transform: scale(1.03);
+      position: relative;
     }
-    .pricing-card h3 { font-size: 1.3rem; margin-bottom: 8px; }
-    .pricing-card .price { font-size: 2.5rem; font-weight: 700; color: #4fc3f7; margin: 16px 0; }
-    .pricing-card .price span { font-size: 1rem; color: #888; }
-    .pricing-card ul { list-style: none; margin: 24px 0; text-align: left; }
-    .pricing-card ul li { padding: 6px 0; color: #ccc; }
-    .pricing-card ul li::before { content: '✓ '; color: #4fc3f7; }
-    .btn {
+    .pricing-card.featured::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #58a6ff;
+      color: #0d1117;
+      padding: 4px 16px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .pricing-card h3 { font-size: 1.3rem; color: #f0f6fc; margin-bottom: 8px; }
+    .pricing-card .price { font-size: 2.8rem; font-weight: 800; color: #58a6ff; margin: 16px 0 4px; }
+    .pricing-card .price-period { color: #8b949e; font-size: 0.9rem; margin-bottom: 20px; }
+    .pricing-card ul { list-style: none; margin: 24px 0; text-align: left; flex: 1; }
+    .pricing-card ul li { padding: 8px 0; color: #c9d1d9; font-size: 0.95rem; border-bottom: 1px solid #21262d; }
+    .pricing-card ul li:last-child { border-bottom: none; }
+    .pricing-card ul li::before { content: '✓ '; color: #3fb950; font-weight: 700; }
+    .pricing-card ul li.missing { color: #484f58; }
+    .pricing-card ul li.missing::before { content: '✗ '; color: #484f58; }
+    .pricing-card .btn {
       display: inline-block;
-      background: #4fc3f7;
-      color: #1a1a2e;
+      background: #238636;
+      color: white;
       padding: 12px 32px;
       border-radius: 6px;
       text-decoration: none;
       font-weight: 600;
-      margin-top: 16px;
+      margin-top: auto;
+      transition: background 0.2s;
     }
-    .btn-outline {
+    .pricing-card .btn:hover { background: #2ea043; }
+    .pricing-card .btn-outline {
       background: transparent;
-      border: 2px solid #4fc3f7;
-      color: #4fc3f7;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
     }
+    .pricing-card .btn-outline:hover { background: #21262d; }
 
-    /* Footer */
-    footer {
-      background: #0f3460;
-      color: #888;
-      padding: 32px 0;
+    .comparison { border-bottom: 1px solid #30363d; }
+    .comparison-table {
+      max-width: 800px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+    .comparison-table table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    .comparison-table th, .comparison-table td {
+      padding: 14px 20px;
       text-align: center;
+      border-bottom: 1px solid #21262d;
+    }
+    .comparison-table th { color: #f0f6fc; font-weight: 600; }
+    .comparison-table td { color: #c9d1d9; }
+    .comparison-table td:first-child { text-align: left; color: #8b949e; }
+    .comparison-table .check { color: #3fb950; font-weight: 700; }
+    .comparison-table .cross { color: #484f58; }
+
+    .testimonials { border-bottom: 1px solid #30363d; }
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .testimonial-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .testimonial-card .quote { color: #c9d1d9; font-style: italic; margin-bottom: 16px; font-size: 0.95rem; }
+    .testimonial-card .author { color: #8b949e; font-size: 0.85rem; }
+    .testimonial-card .author strong { color: #f0f6fc; }
+
+    .demo { border-bottom: 1px solid #30363d; }
+    .demo-terminal {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .demo-terminal .term-header {
+      background: #161b22;
+      padding: 12px 16px;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .demo-terminal .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .demo-terminal .term-dot.red { background: #ff6b6b; }
+    .demo-terminal .term-dot.yellow { background: #ffd93d; }
+    .demo-terminal .term-dot.green { background: #6bcb77; }
+    .demo-terminal .term-title { color: #8b949e; font-size: 0.85rem; margin-left: 8px; }
+    .demo-terminal .term-body {
+      padding: 20px 24px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.85rem;
+      line-height: 1.7;
+    }
+    .demo-terminal .term-body .prompt { color: #8b949e; }
+    .demo-terminal .term-body .output { color: #c9d1d9; }
+    .demo-terminal .term-body .error { color: #ff6b6b; }
+    .demo-terminal .term-body .warn { color: #ffd93d; }
+    .demo-terminal .term-body .success { color: #3fb950; }
+    .demo-terminal .term-body .highlight { color: #58a6ff; }
+
+    .faq { border-bottom: 1px solid #30363d; }
+    .faq-list { max-width: 700px; margin: 0 auto; }
+    .faq-item {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 18px 24px;
+      color: #f0f6fc;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .faq-question:hover { background: #1c2333; }
+    .faq-question .arrow { color: #8b949e; transition: transform 0.2s; }
+    .faq-answer {
+      padding: 0 24px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s, padding 0.3s;
+      color: #8b949e;
+    }
+    .faq-item.open .faq-answer {
+      max-height: 300px;
+      padding: 0 24px 18px;
+    }
+    .faq-item.open .arrow { transform: rotate(180deg); }
+
+    .cta-section {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      text-align: center;
+      padding: 80px 0;
+    }
+    .cta-section h2 { margin-bottom: 12px; }
+    .cta-section p { color: #8b949e; margin-bottom: 32px; font-size: 1.1rem; }
+
+    .email-form {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .email-form input {
+      flex: 1;
+      min-width: 250px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+      background: #161b22;
+      color: #f0f6fc;
+      font-size: 1rem;
+    }
+    .email-form input::placeholder { color: #484f58; }
+    .email-form button {
+      background: #238636;
+      color: white;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .email-form button:hover { background: #2ea043; }
+    .email-form .note { color: #484f58; font-size: 0.8rem; margin-top: 8px; width: 100%; }
+
+    footer {
+      background: #0d1117;
+      border-top: 1px solid #21262d;
+      padding: 40px 0;
+      text-align: center;
+      color: #484f58;
       font-size: 0.85rem;
     }
-    footer a { color: #4fc3f7; text-decoration: none; }
+    footer .footer-links { margin-bottom: 16px; display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; }
+    footer a { color: #8b949e; text-decoration: none; }
+    footer a:hover { color: #58a6ff; }
 
     @media (max-width: 768px) {
       .hero h1 { font-size: 2rem; }
       .pricing-card.featured { transform: none; }
+      nav .nav-links a { margin-left: 12px; font-size: 0.8rem; }
+      .btn-nav { padding: 6px 14px; font-size: 0.85rem; margin-left: 12px !important; }
     }
   </style>
 </head>
@@ -147,34 +383,42 @@
   <nav>
     <div class="container">
       <div class="logo">Review<span>Pilot</span></div>
-      <div>
+      <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#pricing">Pricing</a>
+        <a href="#demo">Demo</a>
+        <a href="#faq">FAQ</a>
         <a href="https://github.com/Sensei7708/reviewpilot">GitHub</a>
-        <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot">npm</a>
-        <a href="#pricing" class="btn-nav">Buy License</a>
+        <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot" class="btn-nav">Get Started</a>
       </div>
     </div>
   </nav>
 
   <section class="hero">
     <div class="container">
-      <h1>AI Code Review That's <span>Private & Free</span></h1>
+      <h1>AI Code Review That's <span>100% Private</span></h1>
       <p>ReviewPilot runs entirely on your machine. Your code never leaves your computer. Powered by Ollama — no API costs, no data leaks, no limits.</p>
-      <div class="hero-code">$ npx reviewpilot pr https://github.com/user/repo/pull/42</div>
-      <div class="badges">
-        <span class="badge">🔒 100% Private</span>
-        <span class="badge">💰 Free AI (Ollama)</span>
-        <span class="badge">⚡ Reviews in Seconds</span>
-        <span class="badge">🔧 VS Code Extension</span>
-        <span class="badge">🤖 GitHub Action</span>
+      <div class="hero-code">
+        <span class="prompt">$ </span><span class="cmd">npx reviewpilot pr https://github.com/user/repo/pull/42</span>
+      </div>
+      <div class="hero-badges">
+        <span class="hero-badge">🔒 100% Private</span>
+        <span class="hero-badge">💰 Free AI (Ollama)</span>
+        <span class="hero-badge">⚡ Reviews in Seconds</span>
+        <span class="hero-badge">🔧 VS Code Extension</span>
+        <span class="hero-badge">🤖 GitHub Action</span>
+      </div>
+      <div class="hero-cta">
+        <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot" class="btn-primary">Try Free</a>
+        <a href="#pricing" class="btn-secondary">See Pricing</a>
       </div>
     </div>
   </section>
 
   <section id="features" class="features">
     <div class="container">
-      <h2>How It Works</h2>
+      <h2>Why Developers Choose ReviewPilot</h2>
+      <p class="subtitle">Private, fast, and zero API costs — your code never leaves your machine.</p>
       <div class="feature-grid">
         <div class="feature-card">
           <div class="icon">🔒</div>
@@ -184,7 +428,7 @@
         <div class="feature-card">
           <div class="icon">💰</div>
           <h3>Zero AI Costs</h3>
-          <p>Use any Ollama model for free. Codellama, DeepSeek Coder, Llama 3 — all run on your hardware.</p>
+          <p>Use any Ollama model for free. Codellama, DeepSeek, Llama 3 — all run on your hardware. No per-token fees.</p>
         </div>
         <div class="feature-card">
           <div class="icon">⚡</div>
@@ -194,7 +438,7 @@
         <div class="feature-card">
           <div class="icon">🛡️</div>
           <h3>Catch Issues Early</h3>
-          <p>Bugs, security vulnerabilities, performance problems, and style violations — detected automatically.</p>
+          <p>Bugs, security vulnerabilities, performance problems, and style violations — detected automatically before they ship.</p>
         </div>
         <div class="feature-card">
           <div class="icon">🔧</div>
@@ -206,63 +450,308 @@
           <h3>CI/CD Ready</h3>
           <p>Drop-in GitHub Action. Every PR gets automatically reviewed with a summary comment.</p>
         </div>
+        <div class="feature-card">
+          <div class="icon">📊</div>
+          <h3>Multiple Formats</h3>
+          <p>Output in table, JSON, Markdown, or summary format. Integrate with any workflow.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔄</div>
+          <h3>Any Git Platform</h3>
+          <p>Works with GitHub, GitLab, Bitbucket, or any git-based workflow. Not locked into any platform.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📝</div>
+          <h3>Custom Rules</h3>
+          <p>Define your own review rules. Tailor the AI to your team's coding standards and best practices.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="comparison" class="comparison">
+    <div class="container">
+      <h2>ReviewPilot vs The Alternatives</h2>
+      <p class="subtitle">Why pay per-seat or expose your code to third-party APIs?</p>
+      <div class="comparison-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>ReviewPilot Free</th>
+              <th>ReviewPilot Pro</th>
+              <th>GitHub Copilot</th>
+              <th>CodeRabbit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>100% Local & Private</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+            </tr>
+            <tr>
+              <td>No API Costs</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="cross">✗</td>
+              <td class="cross">✗</td>
+            </tr>
+            <tr>
+              <td>PR Review</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+            </tr>
+            <tr>
+              <td>VS Code Annotations</td>
+              <td class="cross">✗</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="cross">✗</td>
+            </tr>
+            <tr>
+              <td>GitHub Action</td>
+              <td class="cross">✗</td>
+              <td class="check">✓</td>
+              <td class="cross">✗</td>
+              <td class="check">✓</td>
+            </tr>
+            <tr>
+              <td>Custom Rules</td>
+              <td class="cross">✗</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+              <td class="check">✓</td>
+            </tr>
+            <tr>
+              <td>Price</td>
+              <td><strong style="color:#3fb950;">Free</strong></td>
+              <td><strong style="color:#58a6ff;">$199 once</strong></td>
+              <td>$10-39/mo</td>
+              <td>$12-48/mo</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
 
   <section id="pricing" class="pricing">
     <div class="container">
-      <h2>Simple Pricing</h2>
+      <h2>Simple, Transparent Pricing</h2>
+      <p class="subtitle">One-time payment for Pro. No subscriptions, no surprises.</p>
       <div class="pricing-grid">
         <div class="pricing-card">
           <h3>Free</h3>
           <div class="price">$0</div>
+          <div class="price-period">forever</div>
           <ul>
+            <li>5 reviews per day</li>
             <li>1 repository</li>
             <li>Basic code review</li>
             <li>CLI access</li>
-            <li>VS Code extension</li>
-            <li>Community support</li>
+            <li>Table output only</li>
+            <li class="missing">VS Code inline annotations</li>
+            <li class="missing">GitHub Action</li>
+            <li class="missing">Custom rules</li>
+            <li class="missing">Priority support</li>
           </ul>
-          <a href="https://www.npmjs.com/package/reviewpilot" class="btn btn-outline">Get Started</a>
+          <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot" class="btn btn-outline">Get Started</a>
         </div>
 
         <div class="pricing-card featured">
           <h3>Pro</h3>
-          <div class="price">$199 <span>one-time</span></div>
+          <div class="price">$199</div>
+          <div class="price-period">one-time payment</div>
           <ul>
+            <li>Unlimited reviews</li>
             <li>Unlimited repositories</li>
-            <li>Advanced review rules</li>
+            <li>Advanced code review</li>
+            <li>CLI + all output formats</li>
+            <li>VS Code inline annotations</li>
             <li>GitHub Action integration</li>
-            <li>GitLab support</li>
-            <li>Custom rule definitions</li>
-            <li>Priority support</li>
+            <li>Custom review rules</li>
+            <li>Priority email support</li>
           </ul>
           <a href="https://mamunsky.gumroad.com/l/zswdkyv" class="btn">Buy Now</a>
         </div>
 
         <div class="pricing-card">
           <h3>Team</h3>
-          <div class="price">$499 <span>/year</span></div>
+          <div class="price">$499</div>
+          <div class="price-period">per year</div>
           <ul>
             <li>Everything in Pro</li>
             <li>Unlimited team members</li>
             <li>Team analytics dashboard</li>
             <li>Shared review rules</li>
             <li>Slack integration</li>
-            <li>Dedicated support</li>
+            <li>SSO / SAML</li>
+            <li>Audit log</li>
+            <li>Dedicated success manager</li>
           </ul>
-          <a href="https://mamunsky.gumroad.com/l/zswdkyv" class="btn">Buy Now</a>
+          <a href="https://mamunsky.gumroad.com/l/zswdkyv" class="btn">Contact Sales</a>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="demo" class="demo">
+    <div class="container">
+      <h2>See It In Action</h2>
+      <p class="subtitle">One command to review any GitHub PR.</p>
+      <div class="demo-terminal">
+        <div class="term-header">
+          <div class="term-dot red"></div>
+          <div class="term-dot yellow"></div>
+          <div class="term-dot green"></div>
+          <span class="term-title">reviewpilot pr https://github.com/owner/repo/pull/42</span>
+        </div>
+        <div class="term-body">
+          <div><span class="prompt">$ </span>npx reviewpilot pr https://github.com/expressjs/express/pull/5678</div>
+          <div>&nbsp;</div>
+          <div><span class="output">  Fetching PR #5678 from expressjs/express...</span></div>
+          <div><span class="output">  12 hunk(s) in 4 file(s)</span></div>
+          <div>&nbsp;</div>
+          <div><span class="output">  ┌──────────┬──────────────────────┬──────┬──────────────────────────────────────┐</span></div>
+          <div><span class="output">  │ Severity │ File                 │ Line │ Issue                                │</span></div>
+          <div><span class="output">  ├──────────┼──────────────────────┼──────┼──────────────────────────────────────┤</span></div>
+          <div><span class="highlight">  │ HIGH     │ lib/application.js   │  142 │ Unhandled promise rejection in route  │</span></div>
+          <div><span class="warn">  │ MEDIUM   │ lib/request.js       │   67 │ Missing input validation on params    │</span></div>
+          <div><span class="highlight">  │ HIGH     │ lib/response.js      │   89 │ Insecure HTTP header concatenation    │</span></div>
+          <div><span class="output">  │ LOW      │ test/app.test.js     │   23 │ Missing edge case test for empty body │</span></div>
+          <div><span class="output">  └──────────┴──────────────────────┴──────┴──────────────────────────────────────┘</span></div>
+          <div>&nbsp;</div>
+          <div><span class="error">  🔴 Critical: 0</span></div>
+          <div><span class="highlight">  🟠 High: 2</span></div>
+          <div><span class="warn">  🟡 Medium: 1</span></div>
+          <div><span class="success">  🔵 Low: 1</span></div>
+          <div>&nbsp;</div>
+          <div><span class="success">✅ Review complete — 4 issues found</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq">
+    <div class="container">
+      <h2>Frequently Asked Questions</h2>
+      <p class="subtitle">Everything you need to know about ReviewPilot.</p>
+      <div class="faq-list">
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Does ReviewPilot send my code anywhere?
+            <span class="arrow">▼</span>
+          </div>
+          <div class="faq-answer">No. ReviewPilot runs entirely on your machine. It uses Ollama to run AI models locally. Your code never leaves your computer — no API calls, no cloud uploads, no data leaks.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Do I need an API key or subscription?
+            <span class="arrow">▼</span>
+          </div>
+          <div class="faq-answer">Not for the free version. You only need Ollama installed locally. The Pro license is a one-time payment of $199 — no monthly fees, no per-seat pricing.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            What AI models does it support?
+            <span class="arrow">▼</span>
+          </div>
+          <div class="faq-answer">Any Ollama model. Popular choices include CodeLlama, DeepSeek Coder, Llama 3, Mistral, and Phi. You can switch models per review or set a default in config.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Does it work with GitLab or Bitbucket?
+            <span class="arrow">▼</span>
+          </div>
+          <div class="faq-answer">The CLI works with any git-based workflow. GitHub PR support is built-in. GitLab MR support is available in Pro. For other platforms, use the `diff` command to pipe any diff file.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            What happens when I hit the free limit?
+            <span class="arrow">▼</span>
+          </div>
+          <div class="faq-answer">Free users get 5 reviews per day. When you hit the limit, you'll see a prompt to upgrade to Pro ($199 one-time) for unlimited reviews, VS Code annotations, and GitHub Action integration.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFaq(this)">
+            Can I use it in CI/CD pipelines?
+            <span class="arrow">▼</span>
+          </div>
+          <div class="faq-answer">Yes. Pro users get a drop-in GitHub Action that automatically reviews every PR and posts a summary comment. It integrates with your existing workflow in minutes.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <h2>Get Started in 2 Minutes</h2>
+      <p>Install Ollama, pull a model, and run your first review. No sign-up required.</p>
+      <div class="hero-code" style="margin-bottom: 32px;">
+        <span class="prompt">$ </span><span class="cmd">npx reviewpilot pr https://github.com/expressjs/express/pull/5678</span>
+      </div>
+      <div class="hero-cta">
+        <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot" class="btn-primary">Try Free Now</a>
+        <a href="#pricing" class="btn-secondary">Buy Pro — $199</a>
+      </div>
+      <div class="email-form" style="margin-top: 40px;">
+        <p class="note">Get updates on new features, tips, and Pro discounts.</p>
+        <input type="email" placeholder="you@example.com" aria-label="Email for updates">
+        <button onclick="subscribeEmail()">Subscribe</button>
+        <p class="note">No spam. Unsubscribe anytime.</p>
       </div>
     </div>
   </section>
 
   <footer>
     <div class="container">
-      <p>ReviewPilot — Local, private AI code review. <a href="https://github.com/Sensei7708/reviewpilot">GitHub</a> · <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot">npm</a></p>
-      <p style="margin-top: 8px;">&copy; 2026 ReviewPilot. MIT License.</p>
+      <div class="footer-links">
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="#faq">FAQ</a>
+        <a href="https://github.com/Sensei7708/reviewpilot">GitHub</a>
+        <a href="https://www.npmjs.com/package/@sensei7708/reviewpilot">npm</a>
+      </div>
+      <p>&copy; 2026 ReviewPilot. MIT License. Built with Ollama.</p>
     </div>
   </footer>
+
+  <script>
+    function toggleFaq(el) {
+      const item = el.parentElement;
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    function subscribeEmail() {
+      const input = document.querySelector('.email-form input');
+      const btn = document.querySelector('.email-form button');
+      const email = input.value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email address.');
+        return;
+      }
+      btn.textContent = 'Subscribed!';
+      btn.style.background = '#238636';
+      input.value = '';
+      setTimeout(() => { btn.textContent = 'Subscribe'; }, 3000);
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
 </body>
 </html>

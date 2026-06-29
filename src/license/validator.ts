@@ -2,6 +2,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
 import { execSync } from 'child_process';
+import chalk from 'chalk';
 
 const GUMROAD_PRODUCT_PERMALINK = 'zswdkyv';
 const GUMROAD_API = 'https://api.gumroad.com/v2/licenses/verify';
@@ -33,7 +34,6 @@ export function getStoredLicense(): LicenseInfo | null {
       return JSON.parse(readFileSync(LICENSE_PATH, 'utf-8'));
     }
   } catch {
-    // ignore
   }
   return null;
 }
@@ -85,4 +85,52 @@ export function getLicenseTier(): 'free' | 'pro' | 'team' | 'enterprise' {
   if (!isProLicense()) return 'free';
   const license = getStoredLicense();
   return license?.tier || 'pro';
+}
+
+export function canUseFormat(format: string): boolean {
+  if (isProLicense()) return true;
+  return format === 'table';
+}
+
+export function canUseGitHubAction(): boolean {
+  return isProLicense();
+}
+
+export function canUseVsCodeAnnotations(): boolean {
+  return isProLicense();
+}
+
+export function canAutoReviewOnSave(): boolean {
+  return isProLicense();
+}
+
+export function getUpgradePrompt(feature: string): string {
+  if (isProLicense()) return '';
+  return [
+    chalk.yellow(`\n  ${feature} requires a Pro license.`),
+    chalk.yellow(`  Run: reviewpilot license activate <key>`),
+    chalk.dim(`  Buy: https://reviewpilot.dev`),
+    '',
+  ].join('\n');
+}
+
+const UPGRADE_MESSAGES = [
+  'Loving ReviewPilot? Get Pro for unlimited reviews, GitHub Action, and more.',
+  'You\'ve hit the free limit. Upgrade to Pro for $199 (one-time).',
+  'Unlock advanced features: unlimited repos, custom rules, team support.',
+];
+
+export function getUpgradeBanner(): string {
+  if (isProLicense()) return '';
+  const msg = UPGRADE_MESSAGES[Math.floor(Math.random() * UPGRADE_MESSAGES.length)];
+  return [
+    '',
+    chalk.cyan('─'.repeat(50)),
+    chalk.bold('  🔑 Upgrade to ReviewPilot Pro'),
+    chalk.dim(`  ${msg}`),
+    chalk.cyan('─'.repeat(50)),
+    chalk.dim('  reviewpilot license activate <key>'),
+    chalk.dim('  https://reviewpilot.dev'),
+    '',
+  ].join('\n');
 }

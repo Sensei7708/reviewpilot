@@ -12,20 +12,107 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('reviewpilot.reviewFile', reviewFile),
     vscode.commands.registerCommand('reviewpilot.reviewWorkspace', reviewWorkspace),
-    vscode.commands.registerCommand('reviewpilot.clearAnnotations', clearAnnotations)
+    vscode.commands.registerCommand('reviewpilot.clearAnnotations', clearAnnotations),
+    vscode.commands.registerCommand('reviewpilot.upgrade', showUpgrade)
   );
 
-  if (vscode.workspace.getConfiguration('reviewpilot').get('autoReviewOnSave')) {
-    context.subscriptions.push(
-      vscode.workspace.onDidSaveTextDocument((doc) => {
-        if (doc.uri.scheme === 'file') {
-          reviewDocument(doc.uri);
-        }
-      })
-    );
+  const config = vscode.workspace.getConfiguration('reviewpilot');
+  if (config.get('autoReviewOnSave') && !hasProLicense()) {
+    vscode.window.showWarningMessage(
+      'Auto-review on save requires ReviewPilot Pro. Upgrade to enable.',
+      'Upgrade'
+    ).then(selection => {
+      if (selection === 'Upgrade') {
+        vscode.env.openExternal(vscode.Uri.parse('https://reviewpilot.dev'));
+      }
+    });
   }
 
   vscode.window.showInformationMessage('ReviewPilot is ready');
+}
+
+function hasProLicense(): boolean {
+  try {
+    const result = execSync('npx reviewpilot@latest license status --json', {
+      encoding: 'utf-8',
+      timeout: 10000,
+      stdio: ['pipe', 'pipe', 'ignore'],
+    });
+    return !result.includes('free');
+  } catch {
+    return false;
+  }
+}
+
+function showUpgrade() {
+  const panel = vscode.window.createWebviewPanel(
+    'reviewpilotUpgrade',
+    'Upgrade to ReviewPilot Pro',
+    vscode.ViewColumn.One,
+    { enableScripts: true }
+  );
+
+  panel.webview.html = getUpgradeHtml();
+}
+
+function getUpgradeHtml(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upgrade ReviewPilot</title>
+  <style>
+    body { font-family: -apple-system, sans-serif; padding: 24px; color: #ccc; background: #1e1e1e; }
+    h1 { color: #4fc3f7; }
+    .plan { background: #2d2d2d; border-radius: 8px; padding: 16px; margin: 12px 0; }
+    .plan h2 { margin: 0 0 8px; }
+    .plan .price { font-size: 1.5em; color: #4fc3f7; }
+    .btn { display: inline-block; background: #4fc3f7; color: #1e1e1e; padding: 10px 24px; border-radius: 6px; text-decoration: none; margin-top: 12px; font-weight: 600; cursor: pointer; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 4px 0; }
+    li::before { content: '✓ '; color: #4fc3f7; }
+  </style>
+</head>
+<body>
+  <h1>Upgrade ReviewPilot</h1>
+  <p>Unlock the full power of local AI code review.</p>
+
+  <div class="plan">
+    <h2>Pro</h2>
+    <div class="price">$199 <small>one-time</small></div>
+    <ul>
+      <li>Unlimited repositories</li>
+      <li>GitHub Action integration</li>
+      <li>Inline VS Code annotations</li>
+      <li>JSON & Markdown output</li>
+      <li>Auto-review on save</li>
+      <li>Advanced custom rules</li>
+      <li>Priority support</li>
+    </ul>
+    <a class="btn" href="https://reviewpilot.dev">Buy Pro</a>
+  </div>
+
+  <div class="plan">
+    <h2>Team</h2>
+    <div class="price">$499 <small>/year</small></div>
+    <ul>
+      <li>Everything in Pro</li>
+      <li>Unlimited team members</li>
+      <li>Shared review rules</li>
+      <li>Team analytics dashboard</li>
+      <li>Slack integration</li>
+      <li>Dedicated support</li>
+    </ul>
+    <a class="btn" href="https://reviewpilot.dev">Buy Team</a>
+  </div>
+
+  <p style="margin-top: 24px;">
+    Already have a license?
+    <a href="https://reviewpilot.dev/activate" style="color: #4fc3f7;">Activate it here</a>.
+  </p>
+</body>
+</html>`;
 }
 
 function getConfig() {
@@ -37,6 +124,19 @@ function getConfig() {
 }
 
 async function reviewFile() {
+  if (!hasProLicense()) {
+    vscode.window.showWarningMessage(
+      'VS Code inline annotations require ReviewPilot Pro.',
+      'Upgrade',
+      'Learn More'
+    ).then(selection => {
+      if (selection === 'Upgrade') {
+        vscode.env.openExternal(vscode.Uri.parse('https://reviewpilot.dev'));
+      }
+    });
+    return;
+  }
+
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showWarningMessage('No file open to review.');
@@ -47,6 +147,19 @@ async function reviewFile() {
 }
 
 async function reviewWorkspace() {
+  if (!hasProLicense()) {
+    vscode.window.showWarningMessage(
+      'VS Code inline annotations require ReviewPilot Pro.',
+      'Upgrade',
+      'Learn More'
+    ).then(selection => {
+      if (selection === 'Upgrade') {
+        vscode.env.openExternal(vscode.Uri.parse('https://reviewpilot.dev'));
+      }
+    });
+    return;
+  }
+
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     vscode.window.showWarningMessage('No workspace folder open.');
@@ -99,7 +212,7 @@ async function reviewWorkspace() {
     const message = err instanceof Error ? err.message : String(err);
     vscode.window.showErrorMessage(`ReviewPilot failed: ${message}`);
   } finally {
-    try { unlinkSync(tmpFile); } catch { /* ignore */ }
+    try { unlinkSync(tmpFile); } catch { }
   }
 }
 
@@ -148,9 +261,8 @@ async function reviewDocument(uri: vscode.Uri) {
 
     updateDiagnostics(fileFindings);
   } catch {
-    // ignore review errors silently for auto-review
   } finally {
-    try { unlinkSync(tmpFile); } catch { /* ignore */ }
+    try { unlinkSync(tmpFile); } catch { }
   }
 }
 

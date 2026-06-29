@@ -1,7 +1,7 @@
 {
   "name": "@sensei7708/reviewpilot",
-  "version": "1.0.0",
-  "description": "AI-powered code review CLI. Analyzes PRs and diffs using Ollama (local, free, private).",
+  "version": "1.1.0",
+  "description": "AI-powered code review CLI. Analyzes PRs and diffs using Ollama — 100% local, private, and free. No API costs, no data leaks, no limits.",
   "type": "module",
   "main": "dist/cli/index.js",
   "bin": {
@@ -21,24 +21,44 @@
   },
   "keywords": [
     "code-review",
+    "code-reviewer",
     "ai",
+    "ai-code-review",
     "ollama",
+    "llm",
     "pr-review",
+    "pull-request",
+    "github-actions",
+    "github-action",
     "developer-tool",
-    "cli"
+    "cli",
+    "static-analysis",
+    "code-quality",
+    "security-scanning",
+    "bug-detection",
+    "linter",
+    "codellama",
+    "deepseek",
+    "local-ai",
+    "private-ai",
+    "code-analysis"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sensei7708/reviewpilot.git"
   },
-  "homepage": "https://mamunsky.gumroad.com/l/zswdkyv",
+  "homepage": "https://reviewpilot.dev",
   "bugs": {
     "url": "https://github.com/Sensei7708/reviewpilot/issues"
   },
-  "author": "",
+  "author": "ReviewPilot",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
+  },
+  "funding": {
+    "type": "individual",
+    "url": "https://reviewpilot.dev"
   },
   "dependencies": {
     "commander": "^12.0.0",
