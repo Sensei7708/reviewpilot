@@ -3,7 +3,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { execSync } from 'child_process';
 
-const GUMROAD_PRODUCT_ID = 'reviewpilot-pro';
+const GUMROAD_PRODUCT_PERMALINK = 'zswdkyv';
 const GUMROAD_API = 'https://api.gumroad.com/v2/licenses/verify';
 
 export interface LicenseInfo {
@@ -46,7 +46,7 @@ export function activateLicense(key: string): LicenseInfo {
 
   try {
     const body = JSON.stringify({
-      product_permalink: GUMROAD_PRODUCT_ID,
+      product_permalink: GUMROAD_PRODUCT_PERMALINK,
       license_key: key,
     });
     const result = execSync(

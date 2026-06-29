@@ -3,7 +3,7 @@
 AI-powered code review that runs **entirely on your machine**.
 
 ```
-npx reviewpilot pr https://github.com/user/repo/pull/42
+npx @sensei7708/reviewpilot pr https://github.com/user/repo/pull/42
 ```
 
 Uses [Ollama](https://ollama.ai) for local, private, free AI code reviews. Your code never leaves your machine.
@@ -15,7 +15,7 @@ Uses [Ollama](https://ollama.ai) for local, private, free AI code reviews. Your 
 ollama pull codellama
 
 # Run a review
-npx reviewpilot pr https://github.com/owner/repo/pull/123
+npx @sensei7708/reviewpilot pr https://github.com/owner/repo/pull/123
 ```
 
 ## Commands
@@ -37,7 +37,7 @@ npx reviewpilot pr https://github.com/owner/repo/pull/123
 | Pro | $199 | Unlimited repos, advanced rules, GitHub Action |
 | Team | $499/yr | Everything + team dashboard + priority support |
 
-Buy a license at [reviewpilot.dev](https://reviewpilot.dev)
+Buy a license at [mamunsky.gumroad.com/l/zswdkyv](https://mamunsky.gumroad.com/l/zswdkyv)
 
 ## Why ReviewPilot?
 
