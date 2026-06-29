@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ReviewPilot — AI Code Review, Local & Private</title>
+  <meta name="description" content="AI-powered code review that runs entirely on your machine. Private, free, and fast.">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #1a1a2e;
+      background: #f8f9fa;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* Nav */
+    nav {
+      background: #1a1a2e;
+      color: white;
+      padding: 16px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav .logo { font-size: 1.4rem; font-weight: 700; }
+    nav .logo span { color: #4fc3f7; }
+    nav a { color: #ccc; text-decoration: none; margin-left: 24px; font-size: 0.9rem; }
+    nav a:hover { color: white; }
+    nav .btn-nav {
+      background: #4fc3f7;
+      color: #1a1a2e;
+      padding: 8px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: white;
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 3rem; margin-bottom: 16px; }
+    .hero h1 span { color: #4fc3f7; }
+    .hero p { font-size: 1.2rem; color: #aaa; max-width: 640px; margin: 0 auto 32px; }
+    .hero-code {
+      background: #0f3460;
+      padding: 16px 24px;
+      border-radius: 8px;
+      display: inline-block;
+      font-family: monospace;
+      font-size: 1rem;
+      color: #4fc3f7;
+    }
+    .hero .badges { margin-top: 32px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero .badge {
+      background: rgba(79, 195, 247, 0.15);
+      color: #4fc3f7;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    /* Features */
+    .features { padding: 80px 0; }
+    .features h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+    .feature-card {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .feature-card .icon { font-size: 2rem; margin-bottom: 12px; }
+    .feature-card h3 { margin-bottom: 8px; }
+    .feature-card p { color: #666; font-size: 0.95rem; }
+
+    /* Pricing */
+    .pricing { background: #1a1a2e; color: white; padding: 80px 0; }
+    .pricing h2 { text-align: center; font-size: 2rem; margin-bottom: 48px; }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .pricing-card {
+      background: #16213e;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+    }
+    .pricing-card.featured {
+      border: 2px solid #4fc3f7;
+      transform: scale(1.02);
+    }
+    .pricing-card h3 { font-size: 1.3rem; margin-bottom: 8px; }
+    .pricing-card .price { font-size: 2.5rem; font-weight: 700; color: #4fc3f7; margin: 16px 0; }
+    .pricing-card .price span { font-size: 1rem; color: #888; }
+    .pricing-card ul { list-style: none; margin: 24px 0; text-align: left; }
+    .pricing-card ul li { padding: 6px 0; color: #ccc; }
+    .pricing-card ul li::before { content: '✓ '; color: #4fc3f7; }
+    .btn {
+      display: inline-block;
+      background: #4fc3f7;
+      color: #1a1a2e;
+      padding: 12px 32px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-top: 16px;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #4fc3f7;
+      color: #4fc3f7;
+    }
+
+    /* Footer */
+    footer {
+      background: #0f3460;
+      color: #888;
+      padding: 32px 0;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    footer a { color: #4fc3f7; text-decoration: none; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .pricing-card.featured { transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <div class="logo">Review<span>Pilot</span></div>
+      <div>
+        <a href="#features">Features</a>
+        <a href="#pricing">Pricing</a>
+        <a href="https://github.com/reviewpilot/reviewpilot">GitHub</a>
+        <a href="https://www.npmjs.com/package/reviewpilot">npm</a>
+        <a href="#pricing" class="btn-nav">Buy License</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <h1>AI Code Review That's <span>Private & Free</span></h1>
+      <p>ReviewPilot runs entirely on your machine. Your code never leaves your computer. Powered by Ollama — no API costs, no data leaks, no limits.</p>
+      <div class="hero-code">$ npx reviewpilot pr https://github.com/user/repo/pull/42</div>
+      <div class="badges">
+        <span class="badge">🔒 100% Private</span>
+        <span class="badge">💰 Free AI (Ollama)</span>
+        <span class="badge">⚡ Reviews in Seconds</span>
+        <span class="badge">🔧 VS Code Extension</span>
+        <span class="badge">🤖 GitHub Action</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="features">
+    <div class="container">
+      <h2>How It Works</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">🔒</div>
+          <h3>100% Private</h3>
+          <p>Your code never leaves your machine. Ollama runs locally — no API calls, no data sent to the cloud.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💰</div>
+          <h3>Zero AI Costs</h3>
+          <p>Use any Ollama model for free. Codellama, DeepSeek Coder, Llama 3 — all run on your hardware.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>Instant Feedback</h3>
+          <p>Review PRs in seconds. Get inline comments on your code before your team ever sees it.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🛡️</div>
+          <h3>Catch Issues Early</h3>
+          <p>Bugs, security vulnerabilities, performance problems, and style violations — detected automatically.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🔧</div>
+          <h3>VS Code Integration</h3>
+          <p>Inline annotations in your editor. See issues highlighted as you type — like a linter, but smarter.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🤖</div>
+          <h3>CI/CD Ready</h3>
+          <p>Drop-in GitHub Action. Every PR gets automatically reviewed with a summary comment.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="pricing">
+    <div class="container">
+      <h2>Simple Pricing</h2>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3>Free</h3>
+          <div class="price">$0</div>
+          <ul>
+            <li>1 repository</li>
+            <li>Basic code review</li>
+            <li>CLI access</li>
+            <li>VS Code extension</li>
+            <li>Community support</li>
+          </ul>
+          <a href="https://www.npmjs.com/package/reviewpilot" class="btn btn-outline">Get Started</a>
+        </div>
+
+        <div class="pricing-card featured">
+          <h3>Pro</h3>
+          <div class="price">$199 <span>one-time</span></div>
+          <ul>
+            <li>Unlimited repositories</li>
+            <li>Advanced review rules</li>
+            <li>GitHub Action integration</li>
+            <li>GitLab support</li>
+            <li>Custom rule definitions</li>
+            <li>Priority support</li>
+          </ul>
+          <a href="https://gumroad.com/l/reviewpilot-pro" class="btn">Buy Now</a>
+        </div>
+
+        <div class="pricing-card">
+          <h3>Team</h3>
+          <div class="price">$499 <span>/year</span></div>
+          <ul>
+            <li>Everything in Pro</li>
+            <li>Unlimited team members</li>
+            <li>Team analytics dashboard</li>
+            <li>Shared review rules</li>
+            <li>Slack integration</li>
+            <li>Dedicated support</li>
+          </ul>
+          <a href="https://gumroad.com/l/reviewpilot-team" class="btn">Buy Now</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <p>ReviewPilot — Local, private AI code review. <a href="https://github.com/reviewpilot/reviewpilot">GitHub</a> · <a href="https://www.npmjs.com/package/reviewpilot">npm</a></p>
+      <p style="margin-top: 8px;">&copy; 2026 ReviewPilot. MIT License.</p>
+    </div>
+  </footer>
+</body>
+</html>

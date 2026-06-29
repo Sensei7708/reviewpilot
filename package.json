@@ -1,0 +1,57 @@
+{
+  "name": "reviewpilot",
+  "version": "1.0.0",
+  "description": "AI-powered code review CLI. Analyzes PRs and diffs using Ollama (local, free, private).",
+  "type": "module",
+  "main": "dist/cli/index.js",
+  "bin": {
+    "reviewpilot": "dist/cli/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/cli/index.js",
+    "prepublishOnly": "npm run build",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "code-review",
+    "ai",
+    "ollama",
+    "pr-review",
+    "developer-tool",
+    "cli"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/reviewpilot.git"
+  },
+  "homepage": "https://reviewpilot.dev",
+  "bugs": {
+    "url": "https://github.com/your-username/reviewpilot/issues"
+  },
+  "author": "",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "chalk": "^5.3.0",
+    "cli-table3": "^0.6.4",
+    "ora": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/cli-table": "^0.3.4",
+    "typescript": "^5.4.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0"
+  }
+}

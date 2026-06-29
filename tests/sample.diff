@@ -1,0 +1,42 @@
+diff --git a/src/server.ts b/src/server.ts
+index abc123..def456 100644
+--- a/src/server.ts
++++ b/src/server.ts
+@@ -10,7 +10,8 @@ app.get('/api/users', async (req, res) => {
+   const users = await db.query('SELECT * FROM users');
+   res.json(users);
+ });
+ 
++app.get('/api/users/:id', async (req, res) => {
++  const id = req.params.id;
++  const user = await db.query(`SELECT * FROM users WHERE id = ${id}`);
++  res.json(user);
++});
++
+ app.post('/api/login', async (req, res) => {
+   const { username, password } = req.body;
+   const user = await db.query(`SELECT * FROM users WHERE username = '${username}'`);
+@@ -25,4 +26,8 @@ app.post('/api/login', async (req, res) => {
+   } else {
+     res.status(401).json({ error: 'Invalid credentials' });
+   }
++});
++
++// Admin endpoint
++app.get('/api/admin/delete-all', async (req, res) => {
++  await db.query('DELETE FROM users');
++  res.json({ ok: true });
+ });
+diff --git a/src/utils.ts b/src/utils.ts
+index ghi789..jkl012 100644
+--- a/src/utils.ts
++++ b/src/utils.ts
+@@ -1,5 +1,6 @@
+ export function formatDate(date: Date): string {
+   return date.toISOString();
+ }
+ 
++export function hashPassword(password: string): string {
++  return password; // TODO: implement actual hashing
++}
+ 

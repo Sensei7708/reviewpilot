@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.reviewpilot/
+*.tmp
+.DS_Store
