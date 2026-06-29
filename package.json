@@ -1,5 +1,5 @@
 {
-  "name": "reviewpilot",
+  "name": "@sensei7708/reviewpilot",
   "version": "1.0.0",
   "description": "AI-powered code review CLI. Analyzes PRs and diffs using Ollama (local, free, private).",
   "type": "module",
@@ -29,11 +29,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/your-username/reviewpilot.git"
+    "url": "git+https://github.com/Sensei7708/reviewpilot.git"
   },
-  "homepage": "https://reviewpilot.dev",
+  "homepage": "https://reviewpilot-steel.vercel.app",
   "bugs": {
-    "url": "https://github.com/your-username/reviewpilot/issues"
+    "url": "https://github.com/Sensei7708/reviewpilot/issues"
   },
   "author": "",
   "license": "MIT",
