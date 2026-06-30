@@ -5,6 +5,10 @@
     {
       "src": "index.html",
       "use": "@vercel/static"
+    },
+    {
+      "src": "api/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -12,8 +16,13 @@
     { "src": "/pricing", "dest": "/index.html#pricing" },
     { "src": "/features", "dest": "/index.html#features" },
     { "src": "/faq", "dest": "/index.html#faq" },
-    { "src": "/activate", "dest": "/index.html" }
+    { "src": "/activate", "dest": "/activate.html" }
   ],
+  "functions": {
+    "api/subscribe.js": {
+      "memory": 128
+    }
+  },
   "headers": [
     {
       "source": "/(.*)",

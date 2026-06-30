@@ -578,6 +578,7 @@
             <li>Priority email support</li>
           </ul>
           <a href="https://mamunsky.gumroad.com/l/zswdkyv" class="btn">Buy Now</a>
+          <p style="color: #484f58; font-size: 0.8rem; margin-top: 8px;">After purchase, <a href="/activate" style="color: #58a6ff;">activate your license</a></p>
         </div>
 
         <div class="pricing-card">
@@ -594,7 +595,7 @@
             <li>Audit log</li>
             <li>Dedicated success manager</li>
           </ul>
-          <a href="https://mamunsky.gumroad.com/l/zswdkyv" class="btn">Contact Sales</a>
+          <a href="mailto:hello@reviewpilot.dev?subject=Team%20Plan%20Inquiry" class="btn">Contact Sales</a>
         </div>
       </div>
     </div>
@@ -668,7 +669,7 @@
             Does it work with GitLab or Bitbucket?
             <span class="arrow">▼</span>
           </div>
-          <div class="faq-answer">The CLI works with any git-based workflow. GitHub PR support is built-in. GitLab MR support is available in Pro. For other platforms, use the `diff` command to pipe any diff file.</div>
+            <div class="faq-answer">Yes. GitHub and GitLab are both supported out of the box. For other platforms or custom workflows, use the `diff` command to pipe any diff file.</div>
         </div>
         <div class="faq-item">
           <div class="faq-question" onclick="toggleFaq(this)">
@@ -721,6 +722,7 @@
     </div>
   </footer>
 
+  <script defer data-domain="reviewpilot.dev" src="https://plausible.io/js/script.js"></script>
   <script>
     function toggleFaq(el) {
       const item = el.parentElement;
@@ -732,15 +734,40 @@
     function subscribeEmail() {
       const input = document.querySelector('.email-form input');
       const btn = document.querySelector('.email-form button');
+      const note = document.querySelector('.email-form .note:last-child');
       const email = input.value.trim();
       if (!email || !email.includes('@')) {
         alert('Please enter a valid email address.');
         return;
       }
-      btn.textContent = 'Subscribed!';
-      btn.style.background = '#238636';
-      input.value = '';
-      setTimeout(() => { btn.textContent = 'Subscribe'; }, 3000);
+      btn.textContent = 'Subscribing...';
+      btn.disabled = true;
+      fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          btn.textContent = 'Subscribed!';
+          btn.style.background = '#238636';
+          input.value = '';
+          if (note) note.textContent = 'Thanks! Check your inbox for confirmation.';
+          setTimeout(() => {
+            btn.textContent = 'Subscribe';
+            btn.disabled = false;
+          }, 3000);
+        } else {
+          throw new Error(data.error || 'Failed');
+        }
+      })
+      .catch(() => {
+        btn.textContent = 'Try Again';
+        btn.disabled = false;
+        btn.style.background = '#da3633';
+        setTimeout(() => { btn.style.background = '#238636'; }, 2000);
+      });
     }
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

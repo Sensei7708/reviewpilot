@@ -8,9 +8,9 @@ export const licenseCommand = new Command('license')
     new Command('activate')
       .description('Activate a pro license key')
       .argument('<key>', 'License key from Gumroad')
-      .action((key: string) => {
+      .action(async (key: string) => {
         try {
-          const license = activateLicense(key);
+          const license = await activateLicense(key);
           console.log(chalk.green('\n License activated successfully!\n'));
           console.log(`  Tier:   ${chalk.bold(license.tier.toUpperCase())}`);
           console.log(`  Email:  ${license.email || 'N/A'}`);
@@ -29,9 +29,24 @@ export const licenseCommand = new Command('license')
   .addCommand(
     new Command('status')
       .description('Check current license status')
-      .action(() => {
+      .option('-j, --json', 'Output as JSON')
+      .action((options: { json?: boolean }) => {
         const tier = getLicenseTier();
         const license = getStoredLicense();
+
+        if (options.json) {
+          console.log(JSON.stringify({
+            tier,
+            isPro: tier !== 'free',
+            license: license ? {
+              key: license.key,
+              tier: license.tier,
+              email: license.email,
+              expiresAt: license.expiresAt,
+            } : null,
+          }));
+          return;
+        }
 
         if (tier === 'free') {
           console.log(chalk.blue('\n Edition: Free\n'));

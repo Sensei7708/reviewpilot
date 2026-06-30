@@ -11,6 +11,7 @@ import { localCommand } from './commands/local.js';
 import { checkCommand } from './commands/check.js';
 import { initCommand } from './commands/init.js';
 import { licenseCommand } from './commands/license.js';
+import { salesCommand } from './commands/sales.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,5 +40,6 @@ program.addCommand(localCommand);
 program.addCommand(checkCommand);
 program.addCommand(initCommand);
 program.addCommand(licenseCommand);
+program.addCommand(salesCommand);
 
 program.parse(process.argv);

@@ -60,7 +60,7 @@ export async function analyzeDiff(
   };
 }
 
-function parseFindings(response: string, hunk: DiffHunk): ReviewFinding[] {
+export function parseFindings(response: string, hunk: DiffHunk): ReviewFinding[] {
   const findings: ReviewFinding[] = [];
   const lines = response.split('\n');
   let current: Partial<ReviewFinding> = {};

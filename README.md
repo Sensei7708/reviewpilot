@@ -8,6 +8,7 @@ npx @sensei7708/reviewpilot pr https://github.com/user/repo/pull/42
 ```
 
 [![npm version](https://img.shields.io/npm/v/@sensei7708/reviewpilot)](https://www.npmjs.com/package/@sensei7708/reviewpilot)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Marketplace-0078d7)](https://marketplace.visualstudio.com/items?itemName=reviewpilot.reviewpilot)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/Sensei7708/reviewpilot/pulls)
 [![Buy Pro](https://img.shields.io/badge/Buy-Pro-238636)](https://reviewpilot.dev)
@@ -121,7 +122,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Review PR
-        uses: Sensei7708/reviewpilot@main
+        uses: Sensei7708/reviewpilot/action@main
         with:
           model: codellama
           format: markdown

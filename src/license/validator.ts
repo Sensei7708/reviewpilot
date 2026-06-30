@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { execSync } from 'child_process';
 import chalk from 'chalk';
 
 const GUMROAD_PRODUCT_PERMALINK = 'zswdkyv';
@@ -38,22 +37,23 @@ export function getStoredLicense(): LicenseInfo | null {
   return null;
 }
 
-export function activateLicense(key: string): LicenseInfo {
+export async function activateLicense(key: string): Promise<LicenseInfo> {
   const dir = join(homedir(), '.reviewpilot');
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true });
   }
 
   try {
-    const body = JSON.stringify({
-      product_permalink: GUMROAD_PRODUCT_PERMALINK,
-      license_key: key,
+    const response = await fetch(GUMROAD_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        product_permalink: GUMROAD_PRODUCT_PERMALINK,
+        license_key: key.trim(),
+      }),
     });
-    const result = execSync(
-      `curl -s -X POST "${GUMROAD_API}" -H "Content-Type: application/json" -d "${body.replace(/"/g, '\\"')}"`,
-      { encoding: 'utf-8', timeout: 10000 }
-    );
-    const data = JSON.parse(result);
+
+    const data = await response.json();
 
     if (!data.success) {
       throw new Error(data.message || 'License activation failed');

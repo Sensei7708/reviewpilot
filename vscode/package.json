@@ -5,6 +5,10 @@
   "version": "1.0.0",
   "publisher": "reviewpilot",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sensei7708/reviewpilot.git"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -36,7 +40,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "main": "./src/extension.js",
+  "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
@@ -76,5 +80,8 @@
         }
       }
     }
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0"
   }
 }

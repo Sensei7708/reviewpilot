@@ -6,13 +6,24 @@ import { analyzeDiff } from '../../core/analyzer.js';
 import { report } from '../../core/reporter.js';
 import { loadConfig, incrementReviewCount, getReviewCount } from '../../core/config.js';
 import { parsePRUrl, fetchPRDiff, postPRComment } from '../../github/api.js';
+import type { PRInfo } from '../../github/api.js';
+import { parseMRUrl, fetchMRDiff, postMRComment } from '../../gitlab/api.js';
+import type { MRInfo } from '../../gitlab/api.js';
 import { isProLicense, canUseFormat, getUpgradePrompt, getUpgradeBanner } from '../../license/validator.js';
 import { checkOllama } from '../utils/ollama-check.js';
 
+function isGitLabUrl(url: string): boolean {
+  return /gitlab\./i.test(url) || url.includes('/merge_requests/');
+}
+
+function isGitHubUrl(url: string): boolean {
+  return /github\.com/i.test(url);
+}
+
 export const prCommand = new Command('pr')
-  .description('Analyze a GitHub pull request')
-  .argument('<url>', 'GitHub PR URL (https://github.com/owner/repo/pull/123)')
-  .option('-p, --post', 'Post results as a PR comment (requires GITHUB_TOKEN)')
+  .description('Analyze a pull request on GitHub or GitLab')
+  .argument('<url>', 'PR/MR URL (e.g. https://github.com/owner/repo/pull/123 or https://gitlab.com/owner/repo/-/merge_requests/1)')
+  .option('-p, --post', 'Post results as a PR/MR comment (requires GITHUB_TOKEN or GITLAB_TOKEN)')
   .option('-f, --format <format>', 'Output format: table|json|markdown|summary', 'table')
   .option('-m, --model <model>', 'Ollama model to use')
   .action(async (url: string, options: { post?: boolean; format?: string; model?: string }) => {
@@ -35,40 +46,87 @@ export const prCommand = new Command('pr')
       const ollamaOk = await checkOllama(config);
       if (!ollamaOk) return;
 
-      const info = parsePRUrl(url);
-      console.log(chalk.blue(`\n Fetching PR #${info.number} from ${info.owner}/${info.repo}...`));
+      const isGitLab = isGitLabUrl(url);
+      const isGitHub = isGitHubUrl(url);
 
-      const diffText = fetchPRDiff(info, config.githubToken);
-      if (!diffText || diffText.trim() === '') {
-        console.log(chalk.yellow('PR diff is empty — nothing to review.'));
+      if (!isGitLab && !isGitHub) {
+        console.log(chalk.red('Unsupported platform. Use a GitHub or GitLab URL.'));
         return;
       }
 
-      const diff = parseDiff(diffText);
-      console.log(chalk.dim(`  ${diff.hunks.length} hunk(s) in ${[...new Set(diff.hunks.map(h => h.file))].length} file(s)\n`));
+      if (isGitLab) {
+        const info = parseMRUrl(url);
+        const ownerRepo = `${info.owner}/${info.repo}`;
+        console.log(chalk.blue(`\n Fetching MR #${info.number} from ${ownerRepo}...`));
 
-      const llm = createOllamaClient({
-        model: options.model || config.model,
-        host: config.ollamaHost,
-      });
+        const diffText = fetchMRDiff(info, config.gitlabToken);
+        if (!diffText || diffText.trim() === '') {
+          console.log(chalk.yellow('MR diff is empty — nothing to review.'));
+          return;
+        }
 
-      const result = await analyzeDiff(diff, llm, {
-        rules: config.rules,
-      });
+        const diff = parseDiff(diffText);
+        console.log(chalk.dim(`  ${diff.hunks.length} hunk(s) in ${[...new Set(diff.hunks.map(h => h.file))].length} file(s)\n`));
 
-      incrementReviewCount();
-      const output = report(result, format as any);
-      console.log(output);
+        const llm = createOllamaClient({
+          model: options.model || config.model,
+          host: config.ollamaHost,
+        });
 
-      const pro = isProLicense();
-      if (options.post && pro && config.githubToken) {
-        const markdown = report(result, 'markdown');
-        postPRComment(info, markdown, config.githubToken);
-        console.log(chalk.green(' Results posted as PR comment.'));
-      } else if (options.post && !pro) {
-        console.log(getUpgradePrompt('Posting PR comments'));
-      } else if (options.post && !config.githubToken) {
-        console.log(chalk.yellow(' Set GITHUB_TOKEN env var to post comments.'));
+        const result = await analyzeDiff(diff, llm, {
+          rules: config.rules,
+        });
+
+        incrementReviewCount();
+        const output = report(result, format as any);
+        console.log(output);
+
+        const pro = isProLicense();
+        if (options.post && pro && config.gitlabToken) {
+          const markdown = report(result, 'markdown');
+          postMRComment(info, markdown, config.gitlabToken);
+          console.log(chalk.green(' Results posted as MR comment.'));
+        } else if (options.post && !pro) {
+          console.log(getUpgradePrompt('Posting MR comments'));
+        } else if (options.post && !config.gitlabToken) {
+          console.log(chalk.yellow(' Set GITLAB_TOKEN env var to post comments.'));
+        }
+      } else {
+        const info: PRInfo = parsePRUrl(url);
+        console.log(chalk.blue(`\n Fetching PR #${info.number} from ${info.owner}/${info.repo}...`));
+
+        const diffText = fetchPRDiff(info, config.githubToken);
+        if (!diffText || diffText.trim() === '') {
+          console.log(chalk.yellow('PR diff is empty — nothing to review.'));
+          return;
+        }
+
+        const diff = parseDiff(diffText);
+        console.log(chalk.dim(`  ${diff.hunks.length} hunk(s) in ${[...new Set(diff.hunks.map(h => h.file))].length} file(s)\n`));
+
+        const llm = createOllamaClient({
+          model: options.model || config.model,
+          host: config.ollamaHost,
+        });
+
+        const result = await analyzeDiff(diff, llm, {
+          rules: config.rules,
+        });
+
+        incrementReviewCount();
+        const output = report(result, format as any);
+        console.log(output);
+
+        const pro = isProLicense();
+        if (options.post && pro && config.githubToken) {
+          const markdown = report(result, 'markdown');
+          postPRComment(info, markdown, config.githubToken);
+          console.log(chalk.green(' Results posted as PR comment.'));
+        } else if (options.post && !pro) {
+          console.log(getUpgradePrompt('Posting PR comments'));
+        } else if (options.post && !config.githubToken) {
+          console.log(chalk.yellow(' Set GITHUB_TOKEN env var to post comments.'));
+        }
       }
 
       const { remaining: remainingAfter } = getReviewCount();

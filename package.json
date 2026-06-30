@@ -1,5 +1,5 @@
 {
-  "name": "@sensei7708/reviewpilot",
+  "name": "@sensei_750/reviewpilot",
   "version": "1.1.0",
   "description": "AI-powered code review CLI. Analyzes PRs and diffs using Ollama — 100% local, private, and free. No API costs, no data leaks, no limits.",
   "type": "module",
@@ -16,7 +16,7 @@
     "build": "tsc",
     "start": "node dist/cli/index.js",
     "prepublishOnly": "npm run build",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "dev": "tsc --watch"
   },
   "keywords": [
@@ -51,11 +51,12 @@
   "bugs": {
     "url": "https://github.com/Sensei7708/reviewpilot/issues"
   },
-  "author": "ReviewPilot",
-  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },
+  "author": "ReviewPilot",
+  "license": "MIT",
+  
   "funding": {
     "type": "individual",
     "url": "https://reviewpilot.dev"

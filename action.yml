@@ -1,0 +1,70 @@
+name: 'ReviewPilot'
+description: 'AI-powered code review using Ollama. Reviews PRs for bugs, security issues, and more.'
+author: 'ReviewPilot'
+
+inputs:
+  model:
+    description: 'Ollama model to use for review'
+    required: false
+    default: 'codellama'
+  ollama-host:
+    description: 'Ollama API host'
+    required: false
+    default: 'http://localhost:11434'
+  format:
+    description: 'Output format (table|json|markdown)'
+    required: false
+    default: 'markdown'
+  github-token:
+    description: 'GitHub token for posting comments'
+    required: false
+    default: ${{ github.token }}
+  api-key:
+    description: 'API key (optional, for cloud AI providers instead of Ollama)'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Checkout code'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: 'Fetch PR diff'
+      id: diff
+      shell: bash
+      run: |
+        gh pr diff ${{ github.event.pull_request.number }} > /tmp/pr.diff
+        echo "diff_size=$(wc -c < /tmp/pr.diff)" >> $GITHUB_OUTPUT
+
+    - name: 'Run ReviewPilot'
+      id: review
+      shell: bash
+      env:
+        REVIEWPILOT_MODEL: ${{ inputs.model }}
+        REVIEWPILOT_OLLAMA_HOST: ${{ inputs.ollama-host }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [ ! -s /tmp/pr.diff ]; then
+          echo "No diff to review."
+          echo "result=empty" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        npx reviewpilot@latest diff /tmp/pr.diff --format ${{ inputs.format }} > /tmp/review-result.md
+        echo "result=$(cat /tmp/review-result.md)" >> $GITHUB_OUTPUT
+
+    - name: 'Post PR Comment'
+      if: steps.review.outputs.result != 'empty'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        gh pr comment ${{ github.event.pull_request.number }} \
+          --repo ${{ github.repository }} \
+          --body-file /tmp/review-result.md
+
+branding:
+  icon: 'check-circle'
+  color: 'blue'

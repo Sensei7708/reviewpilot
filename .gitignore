@@ -3,3 +3,8 @@ dist/
 .reviewpilot/
 *.tmp
 .DS_Store
+
+# VS Code extension build artifacts
+vscode/out/
+vscode/*.vsix
+vscode/node_modules/

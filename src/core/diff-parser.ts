@@ -26,7 +26,7 @@ export function parseDiff(raw: string): ParsedDiff {
       continue;
     }
 
-    const hunkHeader = line.match(/^@@ -(\d+),\d+ \+(\d+),\d+ @@/);
+    const hunkHeader = line.match(/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/);
     if (hunkHeader) {
       if (currentHunk) {
         hunks.push(currentHunk);

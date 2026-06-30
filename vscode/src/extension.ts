@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { execSync } from 'child_process';
-import { existsSync, writeFileSync, unlinkSync } from 'fs';
+import { existsSync, writeFileSync, unlinkSync, readFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -33,15 +34,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 function hasProLicense(): boolean {
   try {
-    const result = execSync('npx reviewpilot@latest license status --json', {
-      encoding: 'utf-8',
-      timeout: 10000,
-      stdio: ['pipe', 'pipe', 'ignore'],
-    });
-    return !result.includes('free');
-  } catch {
-    return false;
-  }
+    const licensePath = join(require('os').homedir(), '.reviewpilot', 'license.json');
+    if (existsSync(licensePath)) {
+      const data = JSON.parse(readFileSync(licensePath, 'utf-8'));
+      if (data.tier === 'pro' || data.tier === 'team' || data.tier === 'enterprise') {
+        if (data.expiresAt && new Date(data.expiresAt) < new Date()) return false;
+        return true;
+      }
+    }
+  } catch {}
+  return false;
 }
 
 function showUpgrade() {
@@ -190,7 +192,7 @@ async function reviewWorkspace() {
 
   try {
     const result = execSync(
-      `npx reviewpilot@latest diff "${tmpFile}" --format json`,
+      `reviewpilot diff "${tmpFile}" --format json`,
       {
         cwd: workspaceFolders[0].uri.fsPath,
         encoding: 'utf-8',
@@ -237,12 +239,12 @@ async function reviewDocument(uri: vscode.Uri) {
 
   if (!diffText.trim()) return;
 
-  const tmpFile = join(require('os').tmpdir(), 'reviewpilot-diff.tmp');
+  const tmpFile = join(tmpdir(), `reviewpilot-diff-${Date.now()}.tmp`);
   writeFileSync(tmpFile, diffText, 'utf-8');
 
   try {
     const result = execSync(
-      `npx reviewpilot@latest diff "${tmpFile}" --format json`,
+      `reviewpilot diff "${tmpFile}" --format json`,
       {
         env: {
           ...process.env,

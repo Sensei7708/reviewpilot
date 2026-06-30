@@ -1,0 +1,7 @@
+.vscodeignore
+tsconfig.json
+build.ps1
+src/**
+node_modules/**
+!.vscode/launch.json
+!.vscode/tasks.json
