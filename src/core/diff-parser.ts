@@ -1,3 +1,5 @@
+import minimatch from 'minimatch';
+
 export interface DiffHunk {
   file: string;
   oldStart: number;
@@ -10,6 +12,7 @@ export interface DiffHunk {
 export interface ParsedDiff {
   hunks: DiffHunk[];
   raw: string;
+  filteredCount: number;
 }
 
 export function parseDiff(raw: string): ParsedDiff {
@@ -56,11 +59,23 @@ export function parseDiff(raw: string): ParsedDiff {
     hunks.push(currentHunk);
   }
 
-  return { hunks, raw };
+  return { hunks, raw, filteredCount: 0 };
 }
 
 export function getChangedFiles(diff: ParsedDiff): string[] {
   return [...new Set(diff.hunks.map(h => h.file))];
+}
+
+export function filterIgnoredFiles(diff: ParsedDiff, patterns: string[]): ParsedDiff {
+  if (!patterns || patterns.length === 0) return diff;
+
+  const before = diff.hunks.length;
+  const remaining = diff.hunks.filter(h => !patterns.some(p => minimatch(h.file, p, { matchBase: true })));
+  return {
+    ...diff,
+    hunks: remaining,
+    filteredCount: before - remaining.length,
+  };
 }
 
 export function getHunkSummary(hunk: DiffHunk): string {

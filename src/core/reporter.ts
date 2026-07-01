@@ -2,20 +2,34 @@ import chalk from 'chalk';
 import Table from 'cli-table3';
 import { ReviewResult, ReviewFinding } from './analyzer.js';
 
-export type OutputFormat = 'table' | 'json' | 'markdown' | 'summary';
+export type OutputFormat = 'table' | 'json' | 'markdown' | 'summary' | 'text';
 
 export function report(result: ReviewResult, format: OutputFormat = 'table'): string {
+  let output = '';
   switch (format) {
     case 'json':
-      return reportJson(result);
+      output = reportJson(result);
+      break;
     case 'markdown':
-      return reportMarkdown(result);
+      output = reportMarkdown(result);
+      break;
     case 'summary':
-      return result.summary;
+      output = result.summary;
+      break;
+    case 'text':
+      output = reportText(result);
+      break;
     case 'table':
     default:
-      return reportTable(result);
+      output = reportTable(result);
+      break;
   }
+  if (result.errors && result.errors.length > 0) {
+    const header = format === 'json' ? '' : chalk.yellow('\n ⚠️ Review Errors:\n');
+    const errorLines = result.errors.map(e => format === 'json' ? e : `   ${chalk.dim(e)}`).join('\n');
+    output += `\n${header}${errorLines}\n`;
+  }
+  return output;
 }
 
 function reportTable(result: ReviewResult): string {
@@ -108,6 +122,35 @@ function reportMarkdown(result: ReviewResult): string {
 
   lines.push('');
   return lines.join('\n');
+}
+
+function reportText(result: ReviewResult): string {
+  const lines: string[] = [];
+
+  lines.push(result.summary);
+  lines.push('');
+
+  if (result.findings.length === 0) return lines.join('\n');
+
+  for (const f of result.findings) {
+    const icon = severityIcon(f.severity);
+    lines.push(`${icon} [${f.severity.toUpperCase()}] ${f.file}:${f.line}`);
+    lines.push(`   ${f.issue}`);
+    lines.push(`   \u2192 ${f.suggestion}`);
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+function severityIcon(severity: string): string {
+  switch (severity) {
+    case 'critical': return '\u{1F534}';
+    case 'high': return '\u{1F7E0}';
+    case 'medium': return '\u{1F7E1}';
+    case 'low': return '\u{1F535}';
+    default: return '\u{26AA}';
+  }
 }
 
 function severityColor(

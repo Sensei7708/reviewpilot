@@ -3,7 +3,7 @@ import chalk from 'chalk';
 import {
   searchCompetitorUsers, searchActiveRepos,
   getLeads, addManualLead, updateLeadStatus,
-  generateAllOutreach, getPendingOutreach,
+  generateOutreach, generateAllOutreach, getPendingOutreach, getSentOutreach,
   markSent, generateOutreachToFile,
   getPendingFollowUps, getNurtureReport,
   generateReport, exportPipeline,
@@ -156,7 +156,6 @@ salesCommand
     }
 
     if (options.sent) {
-      const { getSentOutreach } = require('../../sales/index.js');
       const sent = getSentOutreach();
       console.log(chalk.dim(`  ${sent.length} sent messages.`));
       for (const m of sent) {
@@ -182,7 +181,6 @@ salesCommand
       const path = options.file
         ? generateOutreachToFile(options.lead, options.file)
         : null;
-      const { generateOutreach } = require('../../sales/index.js');
       const msg = generateOutreach(options.lead);
       if (msg) {
         console.log(chalk.green(` Generated outreach for lead ${options.lead}:`));

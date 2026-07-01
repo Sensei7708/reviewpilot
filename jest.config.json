@@ -2,7 +2,12 @@
   "preset": "ts-jest/presets/default-esm",
   "testEnvironment": "node",
   "moduleNameMapper": {
-    "^(\\.{1,2}/.*)\\.js$": "$1"
+    "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^chalk$": "<rootDir>/tests/__mocks__/chalk.cjs",
+    "^chalk/source/index.js$": "<rootDir>/tests/__mocks__/chalk.cjs",
+    "^cli-table3$": "<rootDir>/tests/__mocks__/cli-table3.cjs",
+    "^cli-table3/lib/utils.js$": "<rootDir>/tests/__mocks__/cli-table3.cjs",
+    "^ora$": "<rootDir>/tests/__mocks__/chalk.cjs"
   },
   "transform": {
     "^.+\\.tsx?$": [

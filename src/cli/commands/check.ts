@@ -12,9 +12,10 @@ import { canUseFormat, getUpgradePrompt, getUpgradeBanner } from '../../license/
 export const checkCommand = new Command('check')
   .description('Analyze current branch vs main (or specified branch)')
   .argument('[branch]', 'Branch to compare against', 'main')
-  .option('-f, --format <format>', 'Output format: table|json|markdown|summary', 'table')
+  .option('-f, --format <format>', 'Output format: table|json|markdown|summary|text', 'table')
   .option('-m, --model <model>', 'Ollama model to use')
-  .action(async (branch: string, options: { format?: string; model?: string }) => {
+  .option('-c, --concurrency <n>', 'Number of concurrent review requests', '3')
+  .action(async (branch: string, options: { format?: string; model?: string; concurrency?: string }) => {
     try {
       const config = loadConfig();
 
@@ -41,7 +42,6 @@ export const checkCommand = new Command('check')
       }
 
       const diff = parseDiff(diffText);
-      console.log(chalk.dim(`  ${diff.hunks.length} hunk(s) in ${[...new Set(diff.hunks.map(h => h.file))].length} file(s)\n`));
 
       const llm = createOllamaClient({
         model: options.model || config.model,
@@ -50,7 +50,14 @@ export const checkCommand = new Command('check')
 
       const result = await analyzeDiff(diff, llm, {
         rules: config.rules,
+        ignorePatterns: config.ignorePatterns,
+        concurrency: parseInt(options.concurrency || '3', 10),
       });
+
+      const files = result.filesReviewed.length;
+      const filtered = diff.hunks.length - result.totalHunks;
+      const filteredNote = filtered > 0 ? chalk.dim(` (${filtered} filtered)`) : '';
+      console.log(chalk.dim(`  ${result.totalHunks} hunk(s) in ${files} file(s)${filteredNote}\n`));
 
       incrementReviewCount();
       console.log(report(result, format as any));

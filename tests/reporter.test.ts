@@ -12,6 +12,7 @@ const mockResult: ReviewResult = {
   totalHunks: 2,
   totalFindings: 2,
   raw: '',
+  errors: [],
 };
 
 describe('reporter', () => {
@@ -41,8 +42,31 @@ describe('reporter', () => {
       totalHunks: 1,
       totalFindings: 0,
       raw: '',
+      errors: [],
     };
     const output = report(empty, 'summary');
+    expect(output).toContain('no issues found');
+  });
+
+  it('returns text output with emoji severity icons', () => {
+    const output = report(mockResult, 'text');
+    expect(output).toContain('Review Summary');
+    expect(output).toContain('src/app.ts');
+    expect(output).toContain('Bug');
+    expect(output).toContain('Fix it');
+  });
+
+  it('returns text output with zero issues', () => {
+    const empty: ReviewResult = {
+      summary: '✅ Review complete — no issues found',
+      findings: [],
+      filesReviewed: [],
+      totalHunks: 1,
+      totalFindings: 0,
+      raw: '',
+      errors: [],
+    };
+    const output = report(empty, 'text');
     expect(output).toContain('no issues found');
   });
 });

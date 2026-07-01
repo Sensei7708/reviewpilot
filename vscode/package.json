@@ -2,7 +2,7 @@
   "name": "reviewpilot",
   "displayName": "ReviewPilot",
   "description": "AI-powered code review using Ollama — private, local, and free. Inline annotations, bug detection, security scanning.",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "publisher": "reviewpilot",
   "license": "MIT",
   "repository": {
@@ -20,15 +20,23 @@
   ],
   "keywords": [
     "code-review",
+    "code-reviewer",
     "ai",
+    "ai-code-review",
     "ollama",
+    "llm",
+    "pr-review",
+    "pull-request",
     "linter",
     "code-quality",
-    "pr-review",
-    "security",
+    "security-scanning",
+    "bug-detection",
     "static-analysis",
     "code-analysis",
-    "llm",
+    "codellama",
+    "deepseek",
+    "local-ai",
+    "private-ai",
     "developer-tool",
     "productivity"
   ],
@@ -77,6 +85,29 @@
           "type": "boolean",
           "default": false,
           "description": "Automatically review files on save (requires Pro license)"
+        },
+        "reviewpilot.ignorePatterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["package-lock.json", "yarn.lock", "pnpm-lock.yaml", "*.min.*"],
+          "description": "File patterns to skip during review"
+        },
+        "reviewpilot.concurrency": {
+          "type": "number",
+          "default": 3,
+          "description": "Number of concurrent review requests"
+        },
+        "reviewpilot.outputFormat": {
+          "type": "string",
+          "default": "json",
+          "enum": ["json", "text"],
+          "description": "Output format for review results"
+        },
+        "reviewpilot.rules": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": ["bugs", "security", "performance", "style"],
+          "description": "Review rules to apply"
         }
       }
     }

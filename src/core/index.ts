@@ -1,4 +1,4 @@
-export { parseDiff, getChangedFiles, getHunkSummary } from './diff-parser.js';
+export { parseDiff, filterIgnoredFiles, getChangedFiles, getHunkSummary } from './diff-parser.js';
 export type { ParsedDiff, DiffHunk } from './diff-parser.js';
 
 export { createOllamaClient, getAvailableModels } from './llm.js';

@@ -1,4 +1,4 @@
-import { ParsedDiff, DiffHunk, getHunkSummary } from './diff-parser.js';
+import { ParsedDiff, DiffHunk, getHunkSummary, filterIgnoredFiles } from './diff-parser.js';
 import { LLMClient } from './llm.js';
 
 export interface ReviewFinding {
@@ -16,12 +16,68 @@ export interface ReviewResult {
   totalHunks: number;
   totalFindings: number;
   raw: string;
+  errors: string[];
 }
 
 export interface AnalyzeOptions {
   model?: string;
   rules?: string[];
   context?: string;
+  ignorePatterns?: string[];
+  concurrency?: number;
+}
+
+interface HunkResult {
+  hunk: DiffHunk;
+  response: string;
+  findings: ReviewFinding[];
+  error?: string;
+}
+
+async function processHunk(
+  hunk: DiffHunk,
+  llm: LLMClient,
+  options: AnalyzeOptions
+): Promise<HunkResult> {
+  try {
+    const response = await llm.review({
+      diff: hunk.content,
+      file: hunk.file,
+      context: options.context,
+      rules: options.rules,
+    });
+    const parsedFindings = parseFindings(response, hunk);
+    return { hunk, response, findings: parsedFindings };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return {
+      hunk,
+      response: '',
+      findings: [],
+      error: `Failed to review ${hunk.file}:${hunk.newStart}: ${message}`,
+    };
+  }
+}
+
+async function processWithConcurrency(
+  items: DiffHunk[],
+  concurrency: number,
+  fn: (item: DiffHunk, index: number) => Promise<HunkResult>
+): Promise<HunkResult[]> {
+  const results: HunkResult[] = [];
+  const queue = items.map((item, index) => ({ item, index }));
+  let i = 0;
+
+  async function worker(): Promise<void> {
+    while (i < queue.length) {
+      const { item, index } = queue[i++];
+      results[index] = await fn(item, index);
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, items.length) }, () => worker());
+  await Promise.all(workers);
+  return results;
 }
 
 export async function analyzeDiff(
@@ -29,34 +85,56 @@ export async function analyzeDiff(
   llm: LLMClient,
   options: AnalyzeOptions = {}
 ): Promise<ReviewResult> {
-  const allFindings: ReviewFinding[] = [];
+  const filtered = options.ignorePatterns
+    ? filterIgnoredFiles(diff, options.ignorePatterns)
+    : diff;
+  const concurrency = options.concurrency ?? 3;
+
+  if (filtered.hunks.length === 0) {
+    return {
+      summary: `All hunks filtered by ignore patterns (${diff.filteredCount} filtered). Nothing to review.`,
+      findings: [],
+      filesReviewed: [],
+      totalHunks: 0,
+      totalFindings: 0,
+      raw: '',
+      errors: [],
+    };
+  }
+
   const filesReviewed = new Set<string>();
+  const errors: string[] = [];
+  const processed = await processWithConcurrency(
+    filtered.hunks,
+    concurrency,
+    (hunk) => {
+      filesReviewed.add(hunk.file);
+      return processHunk(hunk, llm, options);
+    }
+  );
+
+  const allFindings: ReviewFinding[] = [];
   const findings: string[] = [];
 
-  for (const hunk of diff.hunks) {
-    filesReviewed.add(hunk.file);
-    const summary = getHunkSummary(hunk);
+  for (const p of processed) {
+    if (p.error) {
+      errors.push(p.error);
+      continue;
+    }
+    const summary = getHunkSummary(p.hunk);
     findings.push(`\n## ${summary}`);
-
-    const response = await llm.review({
-      diff: hunk.content,
-      file: hunk.file,
-      context: options.context,
-      rules: options.rules,
-    });
-
-    findings.push(response);
-    const parsedFindings = parseFindings(response, hunk);
-    allFindings.push(...parsedFindings);
+    findings.push(p.response);
+    allFindings.push(...p.findings);
   }
 
   return {
-    summary: generateSummary(allFindings, diff),
+    summary: generateSummary(allFindings, filtered, errors),
     findings: allFindings,
     filesReviewed: [...filesReviewed],
-    totalHunks: diff.hunks.length,
+    totalHunks: filtered.hunks.length,
     totalFindings: allFindings.length,
     raw: findings.join('\n'),
+    errors,
   };
 }
 
@@ -106,7 +184,7 @@ export function parseFindings(response: string, hunk: DiffHunk): ReviewFinding[]
   return findings;
 }
 
-function generateSummary(findings: ReviewFinding[], diff: ParsedDiff): string {
+function generateSummary(findings: ReviewFinding[], diff: ParsedDiff, errors?: string[]): string {
   const critical = findings.filter(f => f.severity === 'critical').length;
   const high = findings.filter(f => f.severity === 'high').length;
   const medium = findings.filter(f => f.severity === 'medium').length;
@@ -115,8 +193,16 @@ function generateSummary(findings: ReviewFinding[], diff: ParsedDiff): string {
   const total = findings.length;
   const files = [...new Set(findings.map(f => f.file))].length;
 
-  if (total === 0) {
+  const errorCount = errors?.length ?? 0;
+
+  if (total === 0 && errorCount === 0) {
     return `✅ Review complete — no issues found across ${diff.hunks.length} hunk(s) in ${[...new Set(diff.hunks.map(h => h.file))].length} file(s).`;
+  }
+
+  const errorLine = errorCount > 0 ? `\n- ⚠️ Errors: ${errorCount} hunk(s) failed` : '';
+
+  if (total === 0) {
+    return `Review complete — no issues found.${errorLine}`;
   }
 
   return [
@@ -127,7 +213,8 @@ function generateSummary(findings: ReviewFinding[], diff: ParsedDiff): string {
     `- 🟠 High: ${high}`,
     `- 🟡 Medium: ${medium}`,
     `- 🔵 Low: ${low}`,
-  ].join('\n');
+    errorLine,
+  ].filter(Boolean).join('\n');
 }
 
 export function formatFindingsAsTable(findings: ReviewFinding[]): string {

@@ -3,6 +3,7 @@ import { join } from 'path';
 import { homedir } from 'os';
 import { createHash } from 'crypto';
 import { execSync } from 'child_process';
+import { validateConfig, formatValidationErrors } from './config-validator.js';
 
 export interface ReviewPilotConfig {
   model: string;
@@ -10,7 +11,7 @@ export interface ReviewPilotConfig {
   rules: string[];
   githubToken?: string;
   gitlabToken?: string;
-  defaultFormat: 'table' | 'json' | 'markdown' | 'summary';
+  defaultFormat: 'table' | 'json' | 'markdown' | 'summary' | 'text';
   ignorePatterns: string[];
 }
 

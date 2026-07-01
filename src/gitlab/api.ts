@@ -1,5 +1,3 @@
-import { execSync } from 'child_process';
-
 export interface MRInfo {
   host: string;
   owner: string;
@@ -38,39 +36,58 @@ function encodeProjectPath(owner: string, repo: string): string {
   return encodeURIComponent(`${owner}/${repo}`);
 }
 
-export function fetchMRDiff(info: MRInfo, token?: string): string {
-  const project = encodeProjectPath(info.owner, info.repo);
-  const auth = token ? `-H "PRIVATE-TOKEN: ${token}"` : '';
-  const apiHost = info.host === 'https://gitlab.com'
+function getApiHost(info: MRInfo): string {
+  return info.host === 'https://gitlab.com'
     ? 'https://gitlab.com'
     : `${info.host}/api/v4`;
-  const cmd = `curl -s ${auth} -H "Accept: text/plain" "${apiHost}/api/v4/projects/${project}/merge_requests/${info.number}/diff"`;
-  return execSync(cmd, { encoding: 'utf-8', timeout: 30000 });
 }
 
-export function fetchMRDetails(info: MRInfo, token?: string): string {
+export async function fetchMRDiff(info: MRInfo, token?: string): Promise<string> {
   const project = encodeProjectPath(info.owner, info.repo);
-  const auth = token ? `-H "PRIVATE-TOKEN: ${token}"` : '';
-  const apiHost = info.host === 'https://gitlab.com'
-    ? 'https://gitlab.com'
-    : `${info.host}/api/v4`;
-  const cmd = `curl -s ${auth} "${apiHost}/api/v4/projects/${project}/merge_requests/${info.number}"`;
-  return execSync(cmd, { encoding: 'utf-8', timeout: 15000 });
+  const headers: Record<string, string> = { Accept: 'text/plain' };
+  if (token) headers['PRIVATE-TOKEN'] = token;
+
+  const response = await fetch(
+    `${getApiHost(info)}/api/v4/projects/${project}/merge_requests/${info.number}/diff`,
+    { headers, signal: AbortSignal.timeout(30000) }
+  );
+  if (!response.ok) {
+    throw new Error(`GitLab API error: HTTP ${response.status} ${response.statusText}`);
+  }
+  return response.text();
 }
 
-export function postMRComment(info: MRInfo, body: string, token: string): void {
+export async function fetchMRDetails(info: MRInfo, token?: string): Promise<string> {
   const project = encodeProjectPath(info.owner, info.repo);
-  const jsonBody = JSON.stringify({ body });
-  const escaped = jsonBody.replace(/"/g, '\\"');
-  const apiHost = info.host === 'https://gitlab.com'
-    ? 'https://gitlab.com'
-    : `${info.host}/api/v4`;
-  const cmd = [
-    `curl -s -X POST`,
-    `-H "PRIVATE-TOKEN: ${token}"`,
-    `-H "Content-Type: application/json"`,
-    `-d "${escaped}"`,
-    `"${apiHost}/api/v4/projects/${project}/merge_requests/${info.number}/notes"`,
-  ].join(' ');
-  execSync(cmd, { encoding: 'utf-8', timeout: 15000 });
+  const headers: Record<string, string> = {};
+  if (token) headers['PRIVATE-TOKEN'] = token;
+
+  const response = await fetch(
+    `${getApiHost(info)}/api/v4/projects/${project}/merge_requests/${info.number}`,
+    { headers, signal: AbortSignal.timeout(15000) }
+  );
+  if (!response.ok) {
+    throw new Error(`GitLab API error: HTTP ${response.status} ${response.statusText}`);
+  }
+  return response.text();
+}
+
+export async function postMRComment(info: MRInfo, body: string, token: string): Promise<void> {
+  const project = encodeProjectPath(info.owner, info.repo);
+
+  const response = await fetch(
+    `${getApiHost(info)}/api/v4/projects/${project}/merge_requests/${info.number}/notes`,
+    {
+      method: 'POST',
+      headers: {
+        'PRIVATE-TOKEN': token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ body }),
+      signal: AbortSignal.timeout(15000),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`GitLab API error posting comment: HTTP ${response.status} ${response.statusText}`);
+  }
 }

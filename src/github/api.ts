@@ -26,24 +26,38 @@ export function parsePRUrl(url: string): PRInfo {
   };
 }
 
-export function fetchPRDiff(info: PRInfo, token?: string): string {
-  const auth = token ? `-H "Authorization: token ${token}"` : '';
-  const cmd = `curl -s ${auth} -H "Accept: application/vnd.github.v3.diff" "https://api.github.com/repos/${info.owner}/${info.repo}/pulls/${info.number}"`;
-  return execSync(cmd, { encoding: 'utf-8', timeout: 30000 });
+export async function fetchPRDiff(info: PRInfo, token?: string): Promise<string> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3.diff',
+  };
+  if (token) headers.Authorization = `token ${token}`;
+
+  const response = await fetch(
+    `https://api.github.com/repos/${info.owner}/${info.repo}/pulls/${info.number}`,
+    { headers, signal: AbortSignal.timeout(30000) }
+  );
+  if (!response.ok) {
+    throw new Error(`GitHub API error: HTTP ${response.status} ${response.statusText}`);
+  }
+  return response.text();
 }
 
-export function postPRComment(info: PRInfo, body: string, token: string): void {
-  const jsonBody = JSON.stringify({ body });
-  const escaped = jsonBody.replace(/"/g, '\\"');
-  const cmd = [
-    `curl -s -X POST`,
-    `-H "Authorization: token ${token}"`,
-    `-H "Content-Type: application/json"`,
-    `-d "${escaped}"`,
-    `"https://api.github.com/repos/${info.owner}/${info.repo}/issues/${info.number}/comments"`,
-  ].join(' ');
-
-  execSync(cmd, { encoding: 'utf-8', timeout: 15000 });
+export async function postPRComment(info: PRInfo, body: string, token: string): Promise<void> {
+  const response = await fetch(
+    `https://api.github.com/repos/${info.owner}/${info.repo}/issues/${info.number}/comments`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `token ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ body }),
+      signal: AbortSignal.timeout(15000),
+    }
+  );
+  if (!response.ok) {
+    throw new Error(`GitHub API error posting comment: HTTP ${response.status} ${response.statusText}`);
+  }
 }
 
 export function getLocalDiff(branch?: string): string {

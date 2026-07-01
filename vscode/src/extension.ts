@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { execSync } from 'child_process';
-import { existsSync, writeFileSync, unlinkSync, readFileSync, mkdirSync } from 'fs';
+import { existsSync, writeFileSync, unlinkSync, readFileSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import { tmpdir, homedir } from 'os';
 
 let diagnosticCollection: vscode.DiagnosticCollection;
 
@@ -34,7 +34,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function hasProLicense(): boolean {
   try {
-    const licensePath = join(require('os').homedir(), '.reviewpilot', 'license.json');
+    const licensePath = join(homedir(), '.reviewpilot', 'license.json');
     if (existsSync(licensePath)) {
       const data = JSON.parse(readFileSync(licensePath, 'utf-8'));
       if (data.tier === 'pro' || data.tier === 'team' || data.tier === 'enterprise') {
@@ -78,18 +78,19 @@ function getUpgradeHtml(): string {
 </head>
 <body>
   <h1>Upgrade ReviewPilot</h1>
-  <p>Unlock the full power of local AI code review.</p>
+  <p>Unlock the full power of local AI code review with Ollama.</p>
 
   <div class="plan">
     <h2>Pro</h2>
     <div class="price">$199 <small>one-time</small></div>
     <ul>
       <li>Unlimited repositories</li>
-      <li>GitHub Action integration</li>
+      <li>GitHub Action &amp; GitLab CI integration</li>
       <li>Inline VS Code annotations</li>
-      <li>JSON & Markdown output</li>
+      <li>JSON, Markdown &amp; text output</li>
       <li>Auto-review on save</li>
       <li>Advanced custom rules</li>
+      <li>Concurrent analysis (faster reviews)</li>
       <li>Priority support</li>
     </ul>
     <a class="btn" href="https://reviewpilot.dev">Buy Pro</a>
@@ -122,6 +123,10 @@ function getConfig() {
   return {
     model: config.get<string>('model', 'codellama'),
     host: config.get<string>('ollamaHost', 'http://127.0.0.1:11434'),
+    format: config.get<string>('outputFormat', 'json'),
+    concurrency: config.get<number>('concurrency', 3),
+    ignorePatterns: config.get<string[]>('ignorePatterns', []),
+    rules: config.get<string[]>('rules', []),
   };
 }
 
@@ -192,7 +197,7 @@ async function reviewWorkspace() {
 
   try {
     const result = execSync(
-      `reviewpilot diff "${tmpFile}" --format json`,
+      `reviewpilot diff "${tmpFile}" --format ${config.format}${config.concurrency > 1 ? ` --concurrency ${config.concurrency}` : ''}`,
       {
         cwd: workspaceFolders[0].uri.fsPath,
         encoding: 'utf-8',
@@ -205,11 +210,15 @@ async function reviewWorkspace() {
       }
     );
 
-    const parsed = JSON.parse(result);
-    updateDiagnostics(parsed.findings || []);
-    vscode.window.showInformationMessage(
-      `ReviewPilot: ${parsed.totalFindings || 0} issues found`
-    );
+    if (config.format === 'json') {
+      const parsed = JSON.parse(result);
+      updateDiagnostics(parsed.findings || []);
+      vscode.window.showInformationMessage(
+        `ReviewPilot: ${parsed.totalFindings || 0} issues found`
+      );
+    } else {
+      showOutputChannel(result);
+    }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     vscode.window.showErrorMessage(`ReviewPilot failed: ${message}`);
@@ -244,7 +253,7 @@ async function reviewDocument(uri: vscode.Uri) {
 
   try {
     const result = execSync(
-      `reviewpilot diff "${tmpFile}" --format json`,
+      `reviewpilot diff "${tmpFile}" --format json${config.concurrency > 1 ? ` --concurrency ${config.concurrency}` : ''}`,
       {
         env: {
           ...process.env,
@@ -305,6 +314,13 @@ function updateDiagnostics(findings: any[]) {
       diagnostics
     );
   }
+}
+
+function showOutputChannel(text: string) {
+  const channel = vscode.window.createOutputChannel('ReviewPilot');
+  channel.clear();
+  channel.append(text);
+  channel.show();
 }
 
 function clearAnnotations() {

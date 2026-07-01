@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
-import { execSync } from 'child_process';
 import { Lead, LeadSource, LeadTier, LeadStatus } from './types.js';
 import { getPipelineDir } from './coordinator.js';
 
@@ -26,10 +25,13 @@ const LEAD_SCORE_WEIGHTS = {
   hasCodeReviewEnabled: 20,
 };
 
-function getRepoActivity(repo: string): { stars: number; openIssues: number; lastPush: string } {
+async function getRepoActivity(repo: string): Promise<{ stars: number; openIssues: number; lastPush: string }> {
   try {
-    const cmd = `curl -s "https://api.github.com/repos/${repo}"`;
-    const data = JSON.parse(execSync(cmd, { encoding: 'utf-8', timeout: 10000 }));
+    const response = await fetch(`https://api.github.com/repos/${repo}`, {
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) return { stars: 0, openIssues: 0, lastPush: '' };
+    const data = await response.json() as { stargazers_count?: number; open_issues_count?: number; pushed_at?: string };
     return {
       stars: data.stargazers_count || 0,
       openIssues: data.open_issues_count || 0,
@@ -40,12 +42,16 @@ function getRepoActivity(repo: string): { stars: number; openIssues: number; las
   }
 }
 
-function searchRepos(query: string): Array<{ full_name: string; description: string; html_url: string }> {
+async function searchRepos(query: string): Promise<Array<{ full_name: string; description: string; html_url: string }>> {
   try {
     const encoded = encodeURIComponent(query);
-    const cmd = `curl -s "https://api.github.com/search/repositories?q=${encoded}&sort=updated&per_page=20"`;
-    const data = JSON.parse(execSync(cmd, { encoding: 'utf-8', timeout: 15000 }));
-    return data.items?.map((i: any) => ({
+    const response = await fetch(
+      `https://api.github.com/search/repositories?q=${encoded}&sort=updated&per_page=20`,
+      { signal: AbortSignal.timeout(15000) }
+    );
+    if (!response.ok) return [];
+    const data = await response.json() as { items?: Array<{ full_name: string; description?: string; html_url: string }> };
+    return data.items?.map(i => ({
       full_name: i.full_name,
       description: i.description || '',
       html_url: i.html_url,
@@ -55,12 +61,14 @@ function searchRepos(query: string): Array<{ full_name: string; description: str
   }
 }
 
-function checkRepoForCompetitor(repo: string): string | null {
+async function checkRepoForCompetitor(repo: string): Promise<string | null> {
   for (const configFile of COMPETITOR_CONFIG_FILES) {
     try {
-      const cmd = `curl -s -o /dev/null -w "%{http_code}" "https://raw.githubusercontent.com/${repo}/main/${configFile}"`;
-      const status = execSync(cmd, { encoding: 'utf-8', timeout: 10000 }).trim();
-      if (status === '200') {
+      const response = await fetch(
+        `https://raw.githubusercontent.com/${repo}/main/${configFile}`,
+        { method: 'HEAD', signal: AbortSignal.timeout(10000) }
+      );
+      if (response.ok) {
         const comp = COMPETITOR_KEYWORDS.find(k => configFile.includes(k));
         return comp || 'unknown';
       }
@@ -118,13 +126,13 @@ export async function searchCompetitorUsers(): Promise<Lead[]> {
   const newLeads: Lead[] = [];
 
   for (const keyword of COMPETITOR_KEYWORDS) {
-    const repos = searchRepos(`${keyword}+in:readme,+in:description`);
+    const repos = await searchRepos(`${keyword}+in:readme,+in:description`);
     for (const r of repos) {
       if (isDuplicate(existing, r.full_name)) continue;
       if (isDuplicate(newLeads, r.full_name)) continue;
 
-      const competitor = checkRepoForCompetitor(r.full_name);
-      const activity = getRepoActivity(r.full_name);
+      const competitor = await checkRepoForCompetitor(r.full_name);
+      const activity = await getRepoActivity(r.full_name);
 
       const features = {
         hasCompetitor: competitor !== null,
@@ -165,15 +173,15 @@ export async function searchCompetitorUsers(): Promise<Lead[]> {
 export async function searchActiveRepos(query?: string): Promise<Lead[]> {
   const existing = loadExistingLeads();
   const searchQuery = query || 'pushed:>2026-03-01 stars:>10 language:typescript language:rust language:go';
-  const repos = searchRepos(searchQuery);
+  const repos = await searchRepos(searchQuery);
   const newLeads: Lead[] = [];
 
   for (const r of repos) {
     if (isDuplicate(existing, r.full_name)) continue;
     if (isDuplicate(newLeads, r.full_name)) continue;
 
-    const competitor = checkRepoForCompetitor(r.full_name);
-    const activity = getRepoActivity(r.full_name);
+    const competitor = await checkRepoForCompetitor(r.full_name);
+    const activity = await getRepoActivity(r.full_name);
 
     const features = {
       hasCompetitor: competitor !== null,

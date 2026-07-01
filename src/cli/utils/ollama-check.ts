@@ -18,7 +18,7 @@ export async function checkOllama(config: ReviewPilotConfig): Promise<boolean> {
     return false;
   }
 
-  const models = getAvailableModels();
+  const models = await getAvailableModels(config.ollamaHost);
   const hasModel = models.some(m => m.startsWith(config.model));
 
   if (!hasModel && models.length > 0) {

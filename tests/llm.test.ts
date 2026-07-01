@@ -44,7 +44,14 @@ describe('createOllamaClient', () => {
 describe('getAvailableModels', () => {
   it('returns empty array when Ollama is not reachable', async () => {
     const { getAvailableModels } = await import('../src/core/llm.js');
-    const models = getAvailableModels();
+    const models = await getAvailableModels('http://127.0.0.1:1');
+    expect(Array.isArray(models)).toBe(true);
+    expect(models).toHaveLength(0);
+  });
+
+  it('uses default host when none provided', async () => {
+    const { getAvailableModels } = await import('../src/core/llm.js');
+    const models = await getAvailableModels();
     expect(Array.isArray(models)).toBe(true);
   });
 });

@@ -1,5 +1,3 @@
-import { execSync } from 'child_process';
-
 export interface LLMOptions {
   model?: string;
   host?: string;
@@ -74,11 +72,16 @@ Review:`;
     });
 
     try {
-      const result = execSync(
-        `curl -s "${host}/api/generate" -d "${escapeJson(body)}"`,
-        { encoding: 'utf-8', timeout: 120000 }
-      );
-      const parsed = JSON.parse(result);
+      const response = await fetch(`${host}/api/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        signal: AbortSignal.timeout(120000),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const parsed = await response.json() as { response?: string };
       return parsed.response || '';
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -88,11 +91,11 @@ Review:`;
 
   async function checkConnection(): Promise<boolean> {
     try {
-      const result = execSync(
-        `curl -s "${host}/api/tags"`,
-        { encoding: 'utf-8', timeout: 5000 }
-      );
-      JSON.parse(result);
+      const response = await fetch(`${host}/api/tags`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!response.ok) return false;
+      await response.json();
       return true;
     } catch {
       return false;
@@ -102,23 +105,15 @@ Review:`;
   return { review, checkConnection };
 }
 
-function escapeJson(str: string): string {
-  return str
-    .replace(/\\/g, '\\\\')
-    .replace(/"/g, '\\"')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r')
-    .replace(/\t/g, '\\t');
-}
-
-export function getAvailableModels(): string[] {
+export async function getAvailableModels(host?: string): Promise<string[]> {
+  const url = host || 'http://127.0.0.1:11434';
   try {
-    const result = execSync(
-      `curl -s "http://127.0.0.1:11434/api/tags"`,
-      { encoding: 'utf-8', timeout: 5000 }
-    );
-    const parsed = JSON.parse(result);
-    return (parsed.models || []).map((m: { name: string }) => m.name);
+    const response = await fetch(`${url}/api/tags`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return [];
+    const parsed = await response.json() as { models?: Array<{ name: string }> };
+    return (parsed.models || []).map(m => m.name);
   } catch {
     return [];
   }

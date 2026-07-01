@@ -89,7 +89,7 @@ export function getLicenseTier(): 'free' | 'pro' | 'team' | 'enterprise' {
 
 export function canUseFormat(format: string): boolean {
   if (isProLicense()) return true;
-  return format === 'table';
+  return format === 'table' || format === 'text';
 }
 
 export function canUseGitHubAction(): boolean {
